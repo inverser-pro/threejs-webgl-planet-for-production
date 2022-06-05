@@ -16,7 +16,7 @@ camera.position.set(0, 10, 10);
 const renderer = new THREE.WebGLRenderer({antialias: true,alpha: true});
 renderer.setSize(innerWidth, innerHeight);
 
-renderer.setClearColor('#000', 0);
+renderer.setClearColor(0x000000, 0);
 
 document.body.appendChild(renderer.domElement);
 
