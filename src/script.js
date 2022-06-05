@@ -35,7 +35,7 @@ const params = {
   colors: {
     base: 0xffffff,// Base map color | FOR COLOR USE 0x -> FFFFFF -> AND ANY HEX COLOR VALUE
     gradInner: 0xc7c7c7, // Inner gradient of "boom"
-    gradOuter: 0x858585, // Outer gradient of "boom"
+    gradOuter: 0x464646, // Outer gradient of "boom"
     lineColor: 0xcd390b, // Color lines
   },
   mapPoints:{
@@ -50,8 +50,13 @@ const params = {
 //const tmpFrom={lat:32.622876, lon:107.523152}//Китай
 //const tmpTo={lat:-26.164493,lon:134.742407}//Австралия
 
-const positions=[
-  {lat:32.622876, lon:107.523152},//FROM 1 China
+const data=[
+  { lat:32.622876, // Earth coordinate latitude
+    lon:107.523152, // Earth coordinate longitude
+    lineColor:0x0000ff,
+    boomSpeed: 500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
+    boomRadius: .5, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+  },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
 
   {lat:7.466688, lon:19.987692},//FROM  2 // Central Africa
@@ -61,36 +66,36 @@ const positions=[
   {lat:76.910298, lon:-40.348415},//TO 2 // Greenland
 ]
 
-const maxImpactAmount = positions.length/2;
+const maxImpactAmount = data.length/2;
 function isFloat(n){
   return Number(n) === n && n % 1 !== 0;
 }
-if(!Number.isInteger(positions.length/2%2)){
-  throw new Error('Check positions array. The number of array elements is odd!')
+if(!Number.isInteger(data.length/2%2)){
+  throw new Error('Check data array. The number of array elements is odd!')
 }
 
 const impacts = [];
 const trails = [];
 let tmp=0,tmp1=0
 const tweenGroup = new TWEEN.Group()
-for(let i=0;i<positions.length/2;i++){
+for(let i=0;i<data.length/2;i++){
   if(
-    !positions[tmp1].lat
-    ||!positions[tmp1].lon
-    ||!isFloat(positions[tmp1].lat)
-    ||!isFloat(positions[tmp1].lon)
-    ||!positions[tmp1+1].lat
-    ||!positions[tmp1+1].lon
-    ||!isFloat(positions[tmp1+1].lat)
-    ||!isFloat(positions[tmp1+1].lon)
+    !data[tmp1].lat
+    ||!data[tmp1].lon
+    ||!isFloat(data[tmp1].lat)
+    ||!isFloat(data[tmp1].lon)
+    ||!data[tmp1+1].lat
+    ||!data[tmp1+1].lon
+    ||!isFloat(data[tmp1+1].lat)
+    ||!isFloat(data[tmp1+1].lon)
   ){
-    console.log(positions[tmp1],positions[tmp1+1]);
-    throw new Error('Check positions lat OR lon!')
+    console.log(data[tmp1],data[tmp1+1]);
+    throw new Error('Check data lat OR lon!')
   }
   const o=Object.create({
-    prevPosition: cTv(positions[tmp1]),
-    impactPosition: cTv(positions[tmp1+1]),
-    impactMaxRadius: 5 * THREE.Math.randFloat(.2, .7),
+    prevPosition: cTv(data[tmp1]),
+    impactPosition: cTv(data[tmp1+1]),
+    impactMaxRadius: parseFloat(data[tmp1].boomRadius) || 5 * THREE.Math.randFloat(.2, .7),
     impactRatio: 0,
     trailRatio: {value: 0},
     trailLength: {value: 0},
@@ -101,19 +106,21 @@ for(let i=0;i<positions.length/2;i++){
   const m_=new THREE.Mesh(g_,
       new THREE.MeshBasicMaterial({color:new THREE.Color(THREE.Math.randFloat(0, 1),THREE.Math.randFloat(.5,1),THREE.Math.randFloat(.5,1))})
   )
-  const ppp=cTv(positions[tmp1+1])
+  const ppp=cTv(data[tmp1+1])
   m_.position.set(ppp.x,ppp.y,ppp.z)
   if(group)group.add(m_) */
   // \ JFT
   // Wave
-  /* const w= */new TWEEN.Tween({ value:0},tweenGroup)
-  .to({ value: 1 }, THREE.Math.randInt(2500, 5000))
+  /* const w= */
+  const boomSpeed=parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000);
+  new TWEEN.Tween({ value:0},tweenGroup)
+  .to({ value: 1 }, boomSpeed)
   .onUpdate(val => {
     o.impactRatio = val.value;
   }).start().repeat(Infinity)
 
   // Lines
-  makeTrail(i);
+  makeTrail(i,data[tmp1].lineColor);
   const path = trails[i];
   const speed = 2;
   const t=new TWEEN.Tween({value: 0})
@@ -267,12 +274,12 @@ const uniforms = {
     })
   })()
 
-function makeTrail(idx){
+function makeTrail(idx,color){
   const pts = new Array(100 * 3).fill(0);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
   const m = new THREE.LineDashedMaterial({
-  	color: params.colors.lineColor,
+  	color: color || params.colors.lineColor,
     transparent: true,
   	onBeforeCompile: shader => {
     	shader.uniforms.actionRatio = impacts[idx].trailRatio;
