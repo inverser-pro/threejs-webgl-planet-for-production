@@ -8,17 +8,22 @@ import {TWEEN} from 'three/examples/jsm/libs/tween.module.min'
 //import * as dat from 'dat.gui'
 
 //const gui = new dat.GUI()
+const do_cument=document;
+const ca_nvas=do_cument.querySelector('.webgl');
+if(!ca_nvas)throw 'no canvas.webgl';
+const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)}
+
 let o;
 const scene = new THREE.Scene();
 //scene.background = new THREE.Color('blue');
-const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.01, 50);
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.01, 50);
 camera.position.set(0, 10, 10);
-const renderer = new THREE.WebGLRenderer({antialias: true,alpha: true});
-renderer.setSize(innerWidth, innerHeight);
+const renderer = new THREE.WebGLRenderer({canvas:ca_nvas,antialias: true,alpha: true});
+renderer.setSize(sizes.width , sizes.height);
 
 renderer.setClearColor(0x000000, 0);
 
-document.body.appendChild(renderer.domElement);
+//document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = true;
@@ -376,10 +381,10 @@ renderer.setAnimationLoop( () => {
 
 
 function onWindowResize() {
-
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)}
+  camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
 
-  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setSize( sizes.width , sizes.height );
 
 }
