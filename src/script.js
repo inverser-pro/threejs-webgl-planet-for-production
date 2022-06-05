@@ -42,6 +42,9 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
+    showBackMap:true, // Removes the view from the planet map that is in the background
+    showSphereToHideBackSide:true, // IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
+    hiddenShpereColor:0x0000ff,// If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
   reset: ()=>controls.reset()
 }
@@ -53,6 +56,7 @@ const params = {
 const data=[
   { lat:32.622876, // Earth coordinate latitude
     lon:107.523152, // Earth coordinate longitude
+    lineSpeed:5, // How fast does the animation of the line go from point A to point B
     lineColor:0x0000ff,
     boomSpeed: 500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: .5, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
@@ -122,7 +126,7 @@ for(let i=0;i<data.length/2;i++){
   // Lines
   makeTrail(i,data[tmp1].lineColor);
   const path = trails[i];
-  const speed = 2;
+  const speed = data[tmp1].lineSpeed || 2;
   const t=new TWEEN.Tween({value: 0})
   .to({value: 1}, path.geometry.attributes.lineDistance.array[99] / speed * 1000)
   .onUpdate( val => {
@@ -191,9 +195,19 @@ const uniforms = {
           geoms.push(g);
       }
       const g = BufferGeometryUtils.mergeBufferGeometries(geoms);
+      let sideOfMap=(params.mapPoints.showBackMap)?THREE.DoubleSide:THREE.FrontSide;
+      if(params.mapPoints.showSphereToHideBackSide)params.mapPoints.showBackMap=false;
+      if(!params.mapPoints.showBackMap){ // Add sphere hide
+        scene.add(
+          new THREE.Mesh(
+            new THREE.IcosahedronBufferGeometry(rad-.005,16),
+            new THREE.MeshBasicMaterial({color:params.mapPoints.hiddenShpereColor})
+          )
+        )
+      }
       const m = new THREE.MeshBasicMaterial({
         color: new THREE.Color(params.colors.base),
-        side: THREE.DoubleSide,
+        side: sideOfMap,
         transparent:true,
         onBeforeCompile: shader => {
           shader.uniforms.impacts = uniforms.impacts;
@@ -369,7 +383,7 @@ scene.add(group)
 
 // \ our code
 
-window.addEventListener( 'resize', onWindowResize )
+window.addEventListener( 'resize', onWindowResize() )
 
 renderer.setAnimationLoop( () => {
   // our code
@@ -380,11 +394,11 @@ renderer.setAnimationLoop( () => {
   renderer.render(scene, camera)
 })
 
-
-
+//Fix to compute canvas width/height
+setTimeout(()=>{onWindowResize()},1)
 
 function onWindowResize() {
-  const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)}
+  const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)};
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
   renderer.setSize( sizes.width , sizes.height );
