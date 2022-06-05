@@ -131,6 +131,7 @@ for(let i=0;i<data.length/2;i++){
   if(data[tmp1].showStick){
 
     const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
+      side:THREE.DoubleSide,
       uniforms: {
         color: {
           value: new THREE.Color(data[tmp1].stickColor || 0xffffff)
@@ -155,7 +156,7 @@ for(let i=0;i<data.length/2;i++){
           float opacity = 1. - distance / limitDistance;
           gl_FragColor = vec4(color, opacity);
         }`,
-            transparent:true,opacity: 1,//depthWrite:false,
+            transparent:true,opacity: 1,alphaTest:.5,
     });
 
     const points = [];
