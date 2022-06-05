@@ -51,46 +51,53 @@ const params = {
 }
 
 const data=[
-  { lat:32.622876, // Earth coordinate latitude
-    lon:107.523152, // Earth coordinate longitude
+  {
+    lat:32.622876, // REQUIRED | Earth coordinate latitude
+    lon:107.523152, // REQUIRED | Earth coordinate longitude
+    lineSpeed:5, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
+    lineColor:0xff00ff,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
+    boomNeed:false,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
+    boomSpeed: 3500,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
+    boomRadius: 3, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
+    repeatBoom:100,// Infinity or Integer || 1, 2, 1000, Infinity | Number of repeats "boom"
+    repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
+    showStick:true, // Boolean || A line from the point where the "boom" arrives
+    stickColor:0xff0000,// Color | Arrives line color in HEX, ex. 0xffffff - it's white
+    stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)), // min .001, max 10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickWidth:.01, // Float | min ≈.001, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+  },//FROM 1 China
+  {lat:-26.164493,lon:134.742407},//TO   1 Australia
+
+  {
+    lat:7.466688, lon:19.987692, // Earth coordinate longitude
     lineSpeed:5, // How fast does the animation of the line go from point A to point B
-    lineColor:0xff00ff,
+    lineColor:0xff0000,
     boomNeed:true,
     boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
     repeatBoom:100,
     repeatLineGo:100,
     showStick:true,
-    stickColor:0xff0000,
+    stickColor:0x00ff00,
     stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
-    stickWidth:.01,
-  },//FROM 1 China
-  {lat:-26.164493,lon:134.742407},//TO   1 Australia
+    stickWidth:.05,
+  },//FROM  2 // Central Africa
+    {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
-  {lat:7.466688, lon:19.987692, // Earth coordinate longitude
-  lineSpeed:5, // How fast does the animation of the line go from point A to point B
-  lineColor:0xff0000,
-  boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
-  boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
-  repeatBoom:100,
-  repeatLineGo:100,
-  showStick:true,
-  stickColor:0x00ff00,
-  stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
-  stickWidth:.05,},//FROM  2 // Central Africa
-  {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
-
-  {lat:48.358527, lon:-99.761561, // Earth coordinate longitude
-  lineSpeed:5, // How fast does the animation of the line go from point A to point B
-  lineColor:0x0000ff,
-  boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
-  boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
-  repeatBoom:100,
-  repeatLineGo:100,
-  showStick:true,
-  stickColor:0x0000ff,
-  stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
-  stickWidth:.1,},//FROM  3 // South Amer
+    {
+      lat:48.358527, lon:-99.761561, // Earth coordinate longitude
+      lineSpeed:5, // How fast does the animation of the line go from point A to point B
+      lineColor:0x0000ff,
+      boomNeed:false,
+      boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
+      boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+      repeatBoom:100,
+      repeatLineGo:100,
+      showStick:true,
+      stickColor:0x0000ff,
+      stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
+      stickWidth:.1,
+  },//FROM  3 // South Amer
   {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
 ]
 
@@ -156,7 +163,6 @@ for(let i=0;i<data.length/2;i++){
       z:[whereItArrives.z*1.09,whereItArrives.z*stickHeight],
       delay:1000,easing:'linear',duration:2000,})
   }
-
   const o=Object.create({
     prevPosition: cTv(data[tmp1]),
     impactPosition: whereItArrives,
@@ -166,27 +172,17 @@ for(let i=0;i<data.length/2;i++){
     trailLength: {value: 0},
   })
   impacts.push(o);
-  //JFT
-/*   const g_=new THREE.BoxBufferGeometry(.1,.1,.1)
-  const m_=new THREE.Mesh(g_,
-      new THREE.MeshBasicMaterial({color:new THREE.Color(THREE.Math.randFloat(0, 1),THREE.Math.randFloat(.5,1),THREE.Math.randFloat(.5,1))})
-  )
-  const ppp=cTv(data[tmp1+1])
-  m_.position.set(ppp.x,ppp.y,ppp.z)
-  if(group)group.add(m_) */
-  // \ JFT
-  // Wave
-  /* const w= */
-  //if(data[tmp1].repeatBoom)
-  new TWEEN.Tween({ value:0},tweenGroup)
-  .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
-  .onUpdate(val => {
-    o.impactRatio = val.value;
-  }).start().repeat(data[tmp1].repeatBoom || Infinity)
+  if(data[tmp1].boomNeed===undefined || data[tmp1].boomNeed!==false){
+    new TWEEN.Tween({ value:0},tweenGroup)
+    .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
+    .onUpdate(val => {
+      o.impactRatio = val.value;
+    }).start().repeat(data[tmp1].repeatBoom || Infinity)
+  }
 
 
   // Lines
-  makeTrail(i,data[tmp1].lineColor);
+  makeTrail(i,data[tmp1].lineColor || 0xffffff);
   const path = trails[i];
   const speed = data[tmp1].lineSpeed || 2;
   const t=new TWEEN.Tween({value: 0})
@@ -383,7 +379,7 @@ function makeTrail(idx,color){
   });
   const l = new THREE.Line(g, m);
   l.userData.idx = idx;
-  setPath(l, impacts[idx].prevPosition, impacts[idx].impactPosition, 1);
+  if(impacts[idx])setPath(l, impacts[idx].prevPosition, impacts[idx].impactPosition, 1);
   trails.push(l);
 }
 // based on https://jsfiddle.net/prisoner849/fu59aved/
