@@ -33,13 +33,14 @@ const group=new THREE.Group();// empty groupe for add all rotation object
 
 const params = {
   colors: {
-    base: "#ffffff",
-    gradInner: "#ff0022",
-    gradOuter: "#00ff00"
+    base: 0xffffff,// Base map color | FOR COLOR USE 0x -> FFFFFF -> AND ANY HEX COLOR VALUE
+    gradInner: 0xc7c7c7, // Inner gradient of "boom"
+    gradOuter: 0x858585, // Outer gradient of "boom"
+    lineColor: 0xcd390b, // Color lines
   },
   mapPoints:{
-    sizeOfPoints:.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
-    opacityOfOceanPoints:.1,// FLOAT ONLY ex. .1 | MIN: 0.1 - black, MAX: 0.9
+    sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
+    opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
   },
   reset: ()=>controls.reset()
@@ -67,12 +68,9 @@ function isFloat(n){
 if(!Number.isInteger(positions.length/2%2)){
   throw new Error('Check positions array. The number of array elements is odd!')
 }
-// 
+
 const impacts = [];
-const trails = new Array();
-//const tweens = new Array();
-
-
+const trails = [];
 let tmp=0,tmp1=0
 const tweenGroup = new TWEEN.Group()
 for(let i=0;i<positions.length/2;i++){
@@ -126,11 +124,9 @@ for(let i=0;i<positions.length/2;i++){
   //t.chain(w)
   t.start().repeat(Infinity)
   if(tmp===1){
-    tmp1+=2
-    tmp=0
+    tmp1+=2;  tmp=0
   }else{
-    tmp++
-    (tmp1===0)?tmp1=2:tmp1++
+    tmp++;  (tmp1===0)?tmp1=2:tmp1++
   }
 }
 const uniforms = {
@@ -225,7 +221,7 @@ const uniforms = {
             for (int i = 0; i < ${maxImpactAmount};i++){
               float dist = distance(center, impacts[i].impactPosition);
               float curRadius = impacts[i].impactMaxRadius * impacts[i].impactRatio;
-              float sstep = smoothstep(0., curRadius, dist) - smoothstep(curRadius - ( 0.25 * impacts[i].impactRatio ), curRadius, dist);
+              float sstep = smoothstep(0., curRadius, dist) - smoothstep(curRadius - (.25 * impacts[i].impactRatio ), curRadius, dist);
               sstep *= 1. - impacts[i].impactRatio;
               finalStep += sstep;
             }
@@ -276,7 +272,7 @@ function makeTrail(idx){
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
   const m = new THREE.LineDashedMaterial({
-  	color: params.colors.gradOuter,
+  	color: params.colors.lineColor,
     transparent: true,
   	onBeforeCompile: shader => {
     	shader.uniforms.actionRatio = impacts[idx].trailRatio;
@@ -384,7 +380,5 @@ function onWindowResize() {
   const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)}
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
-
   renderer.setSize( sizes.width , sizes.height );
-
 }
