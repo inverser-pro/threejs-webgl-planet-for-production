@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils'
 import {TWEEN} from 'three/examples/jsm/libs/tween.module.min'
 
-import anime, { easing } from 'animejs/lib/anime'
+import anime from 'animejs/lib/anime'
 //import * as dat from 'dat.gui'
 
 //const gui = new dat.GUI()
@@ -24,12 +24,9 @@ renderer.setSize(sizes.width , sizes.height);
 
 renderer.setClearColor(0x000000, 0);
 
-//document.body.appendChild(renderer.domElement);
-
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enablePan = true;
+//controls.enablePan = true;
 
-// our code
 const group=new THREE.Group();// empty groupe for add all rotation object
 
 const params = {
@@ -43,7 +40,7 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
-    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background
+    showBackMap:false, // BOOLEAN | Removes the view from the planet map that is in the background
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
     hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
@@ -55,7 +52,8 @@ const data=[
     lat:32.622876, // REQUIRED | Earth coordinate latitude
     lon:107.523152, // REQUIRED | Earth coordinate longitude
     lineSpeed:5, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
-    lineColor:0xff00ff,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
+    lineWidth:2,// Float | min ≈.1, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width
+    lineColor:0xcccccc,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
     boomNeed:false,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
     boomSpeed: 3500,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: 3, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
@@ -63,7 +61,7 @@ const data=[
     repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
     showStick:true, // Boolean || A line from the point where the "boom" arrives
     stickColor:0xff0000,// Color | Arrives line color in HEX, ex. 0xffffff - it's white
-    stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)), // min .001, max 10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickHeight:1.1, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.01, // Float | min ≈.001, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
@@ -79,23 +77,23 @@ const data=[
     repeatLineGo:100,
     showStick:true,
     stickColor:0x00ff00,
-    stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
-    stickWidth:.05,
+    stickHeight:3,
+    stickWidth:4,
   },//FROM  2 // Central Africa
     {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
     {
       lat:48.358527, lon:-99.761561, // Earth coordinate longitude
       lineSpeed:5, // How fast does the animation of the line go from point A to point B
-      lineColor:0x0000ff,
+      lineColor:0x333333,
       boomNeed:false,
       boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
       boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
       repeatBoom:100,
       repeatLineGo:100,
       showStick:true,
-      stickColor:0x0000ff,
-      stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
+      stickColor:0x333333,
+      stickHeight:1,
       stickWidth:.1,
   },//FROM  3 // South Amer
   {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
@@ -111,10 +109,10 @@ if(!Number.isInteger(data.length/2%2)){
 
 const impacts = [];
 const trails = [];
-//const planes=[];
-let tmp=0,tmp1=0
+let tmp=0,tmp1=0,isMapLoaded=false
 const tweenGroup = new TWEEN.Group()
-//const boxGroupe = new TWEEN.Group()
+const easing='easeInOutSine'// https://codepen.io/kcjpop/pen/GvdQdX
+
 for(let i=0;i<data.length/2;i++){
   if(
     !data[tmp1].lat
@@ -131,37 +129,78 @@ for(let i=0;i<data.length/2;i++){
   }
   const whereItArrives=cTv(data[tmp1+1]);
   if(data[tmp1].showStick){
-    const cylinder=new THREE.Mesh(
-      new THREE.BoxBufferGeometry(
-        data[tmp1].stickWidth || .01,
-        data[tmp1].stickWidth || .01,
-        data[tmp1].stickHeight || .5
-      ),
-      new THREE.MeshBasicMaterial({
-        color:data[tmp1].stickColor || 0xffffff,
-        side:THREE.FrontSide,
-        transparent:true,
-        opacity: 1,
-      })
-    )
-    const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.1) || 1.05
-    cylinder.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
-    cylinder.lookAt(new THREE.Vector3());
-    //cylinder.rotation.set(
-    //  cylinder.rotation.x*.5,
-    //  cylinder.rotation.y*.5,
-    //  cylinder.rotation.z*.5,
+
+    const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
+      uniforms: {
+        color: {
+          value: new THREE.Color(data[tmp1].stickColor || 0xffffff)
+        },
+        origin: {
+          value: new THREE.Vector3()
+        }
+      },
+      linewidth:5,
+        vertexShader: `
+        varying vec3 vPos;
+    void main() 
+    {
+      vPos = position;
+      vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * modelViewPosition;
+    }`,
+        fragmentShader: `uniform vec3 origin;
+        uniform vec3 color;
+        varying vec3 vPos;
+        float limitDistance = 7.0;
+        void main() {
+          float distance = clamp(length(vPos - origin), 0., limitDistance);
+          float opacity = 1. - distance / limitDistance;
+          gl_FragColor = vec4(color, opacity);
+        }`,
+            transparent:true,opacity: 1,depthWrite:false,
+    });
+
+    const points = [];
+    let height=2//data[tmp1].stickHeight || 1.5;
+    if(height===1 || height < 1)height=1.2
+    points.push( new THREE.Vector3( whereItArrives.x,whereItArrives.y,whereItArrives.z ) );
+    points.push( new THREE.Vector3( whereItArrives.x*height,whereItArrives.y*height,whereItArrives.z*height ) );
+
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const line = new THREE.Line( geometry, material );
+    line.lookAt(new THREE.Vector3());
+    group.add(line)
+    //const cylinder=new THREE.Mesh(
+    //  new THREE.BoxBufferGeometry(
+    //    data[tmp1].stickWidth || .01,
+    //    data[tmp1].stickWidth || .01,
+    //    data[tmp1].stickHeight || .5
+    //  ),
+    //  material
+    //  //new THREE.MeshBasicMaterial({
+    //  //  color:data[tmp1].stickColor || 0xffffff,
+    //  //  side:THREE.FrontSide,
+    //  //  transparent:true,
+    //  //  opacity: 0,
+    //  //})
     //)
-    //cylinder.material.opacity=0
-    //boxGroupe.add(cylinder)
-    if(group)group.add(cylinder)
-    anime({targets:cylinder.scale,z:[.5,1],delay:1000,easing:'linear',duration:2000,})
-    anime({targets:cylinder.material,opacity:[0,1],delay:1000,easing:'linear',duration:2000})
-    anime({targets:cylinder.position,
-      x:[whereItArrives.x*1.09,whereItArrives.x*stickHeight],
-      y:[whereItArrives.y*1.09,whereItArrives.y*stickHeight],
-      z:[whereItArrives.z*1.09,whereItArrives.z*stickHeight],
-      delay:1000,easing:'linear',duration:2000,})
+    //const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.1) || 1.05
+    //cylinder.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
+    //cylinder.lookAt(new THREE.Vector3());
+    //if(group)group.add(cylinder)
+    //let interval=setInterval(()=>{
+    //  if(isMapLoaded){
+    //    clearInterval(interval);
+    //    interval=undefined
+    //    anime({targets:cylinder.scale,z:[.5,1],delay:100,easing,duration:2000,})
+    //    anime({targets:cylinder.material,opacity:[0,1],delay:100,easing,duration:2000})
+    //    anime({targets:cylinder.position,
+    //    x:[whereItArrives.x*1.09,whereItArrives.x*stickHeight],
+    //    y:[whereItArrives.y*1.09,whereItArrives.y*stickHeight],
+    //    z:[whereItArrives.z*1.09,whereItArrives.z*stickHeight],
+    //    delay:100,easing,duration:2000,})
+    //  }
+    //},100);
   }
   const o=Object.create({
     prevPosition: cTv(data[tmp1]),
@@ -179,10 +218,8 @@ for(let i=0;i<data.length/2;i++){
       o.impactRatio = val.value;
     }).start().repeat(data[tmp1].repeatBoom || Infinity)
   }
-
-
   // Lines
-  makeTrail(i,data[tmp1].lineColor || 0xffffff);
+  makeTrail(i,data[tmp1].lineColor || 0xffffff,data[tmp1].lineWidth || .1);
   const path = trails[i];
   const speed = data[tmp1].lineSpeed || 2;
   const t=new TWEEN.Tween({value: 0})
@@ -343,15 +380,17 @@ const uniforms = {
       o = new THREE.Mesh(g, m);
       trails.forEach(t => group.add(t));
       group.add(o);
+      isMapLoaded=!isMapLoaded
     })
   })()
 
-function makeTrail(idx,color){
+function makeTrail(idx,color,lineWidth){
   const pts = new Array(100 * 3).fill(0);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
   const m = new THREE.LineDashedMaterial({
   	color: color || params.colors.lineColor,
+    linewidth: lineWidth,
     transparent: true,
   	onBeforeCompile: shader => {
     	shader.uniforms.actionRatio = impacts[idx].trailRatio;
@@ -364,7 +403,7 @@ function makeTrail(idx,color){
       	`if ( mod( vLineDistance, totalSize ) > dashSize ) {
 		discard;
 	}`,
-        ` float halfDash = dashSize * 0.5;
+        ` float halfDash = dashSize * .5;
           float currPos = (lineLength + dashSize) * actionRatio;
         	float d = (vLineDistance + halfDash) - currPos;
         	if (abs(d) > halfDash ) discard;
@@ -440,15 +479,10 @@ scene.add(group)
 window.addEventListener( 'resize', onWindowResize )
 
 renderer.setAnimationLoop( () => {
-  // our code
   TWEEN.update()
   tweenGroup.update()
   group.rotation.y += 0.001
-  // \
   renderer.render(scene, camera)
-  //planes.forEach(e=>{
-  //  e.lookAt(camera.position);
-  //})
 })
 
 //Fix to compute canvas width/height
