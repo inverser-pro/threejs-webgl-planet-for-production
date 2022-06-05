@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils'
 import {TWEEN} from 'three/examples/jsm/libs/tween.module.min'
 
+import anime, { easing } from 'animejs/lib/anime'
 //import * as dat from 'dat.gui'
 
 //const gui = new dat.GUI()
@@ -54,22 +55,43 @@ const data=[
     lon:107.523152, // Earth coordinate longitude
     lineSpeed:5, // How fast does the animation of the line go from point A to point B
     lineColor:0xff00ff,
+    boomNeed:true,
     boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
     repeatBoom:100,
     repeatLineGo:100,
     showStick:true,
     stickColor:0xff0000,
-    stickHeight:THREE.Math.randFloat(.5, 2).toFixed(2),
-    stickWidth:.1,
+    stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
+    stickWidth:.01,
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
 
-  {lat:7.466688, lon:19.987692},//FROM  2 // Central Africa
+  {lat:7.466688, lon:19.987692, // Earth coordinate longitude
+  lineSpeed:5, // How fast does the animation of the line go from point A to point B
+  lineColor:0xff0000,
+  boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
+  boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+  repeatBoom:100,
+  repeatLineGo:100,
+  showStick:true,
+  stickColor:0x00ff00,
+  stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
+  stickWidth:.05,},//FROM  2 // Central Africa
   {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
-  {lat:48.358527, lon:-99.761561},//FROM  2 // South Amer
-  {lat:76.910298, lon:-40.348415},//TO 2 // Greenland
+  {lat:48.358527, lon:-99.761561, // Earth coordinate longitude
+  lineSpeed:5, // How fast does the animation of the line go from point A to point B
+  lineColor:0x0000ff,
+  boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
+  boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+  repeatBoom:100,
+  repeatLineGo:100,
+  showStick:true,
+  stickColor:0x0000ff,
+  stickHeight:parseFloat(THREE.Math.randFloat(.5, 2).toFixed(2)),
+  stickWidth:.1,},//FROM  3 // South Amer
+  {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
 ]
 
 const maxImpactAmount = data.length/2;
@@ -85,6 +107,7 @@ const trails = [];
 //const planes=[];
 let tmp=0,tmp1=0
 const tweenGroup = new TWEEN.Group()
+//const boxGroupe = new TWEEN.Group()
 for(let i=0;i<data.length/2;i++){
   if(
     !data[tmp1].lat
@@ -100,17 +123,18 @@ for(let i=0;i<data.length/2;i++){
     throw new Error('Check data lat OR lon!')
   }
   const whereItArrives=cTv(data[tmp1+1]);
-  console.log(data[tmp].showStick  ,  data[tmp].stickColor);
-  if(data[tmp].showStick){
+  if(data[tmp1].showStick){
     const cylinder=new THREE.Mesh(
       new THREE.BoxBufferGeometry(
-        data[tmp1].stickWidth || .05,
-        data[tmp1].stickWidth || .05,
+        data[tmp1].stickWidth || .01,
+        data[tmp1].stickWidth || .01,
         data[tmp1].stickHeight || .5
       ),
       new THREE.MeshBasicMaterial({
         color:data[tmp1].stickColor || 0xffffff,
-        side:THREE.DoubleSide,
+        side:THREE.FrontSide,
+        transparent:true,
+        opacity: 1,
       })
     )
     const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.1) || 1.05
@@ -119,9 +143,18 @@ for(let i=0;i<data.length/2;i++){
     //cylinder.rotation.set(
     //  cylinder.rotation.x*.5,
     //  cylinder.rotation.y*.5,
-    //  cylinder.rotation.z,
+    //  cylinder.rotation.z*.5,
     //)
+    //cylinder.material.opacity=0
+    //boxGroupe.add(cylinder)
     if(group)group.add(cylinder)
+    anime({targets:cylinder.scale,z:[.5,1],delay:1000,easing:'linear',duration:2000,})
+    anime({targets:cylinder.material,opacity:[0,1],delay:1000,easing:'linear',duration:2000})
+    anime({targets:cylinder.position,
+      x:[whereItArrives.x*1.09,whereItArrives.x*stickHeight],
+      y:[whereItArrives.y*1.09,whereItArrives.y*stickHeight],
+      z:[whereItArrives.z*1.09,whereItArrives.z*stickHeight],
+      delay:1000,easing:'linear',duration:2000,})
   }
 
   const o=Object.create({
@@ -150,6 +183,7 @@ for(let i=0;i<data.length/2;i++){
   .onUpdate(val => {
     o.impactRatio = val.value;
   }).start().repeat(data[tmp1].repeatBoom || Infinity)
+
 
   // Lines
   makeTrail(i,data[tmp1].lineColor);
