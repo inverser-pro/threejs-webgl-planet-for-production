@@ -6,7 +6,7 @@ At the moment, the API is implemented only statically.
 
 My goal is to create a complete version, without the API to begin with. then add the API.
 
-What do I mean by API?
+## What do I mean by API?
 
 API in the classical sense is the transfer of some data that comes from the server.
 
@@ -19,3 +19,22 @@ Those. the ultimate goal is an analogue of the planet with GITHUB / home
 This code uses the THREEJS library.
 
 My code is distributed free of charge, under the MIT license.
+
+
+## I used Three.js Starter
+Courtesy of Bruno Simon of https://threejs-journey.xyz/
+
+## Setup
+Download [Node.js](https://nodejs.org/en/download/).
+Run this followed commands:
+
+``` bash
+# Install dependencies (only the first time)
+npm install
+
+# Run the local server at localhost:8080
+npm run dev
+
+# Build for production in the dist/ directory
+npm run build
+```
