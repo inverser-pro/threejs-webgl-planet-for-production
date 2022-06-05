@@ -61,7 +61,7 @@ const data=[
     repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
     showStick:true, // Boolean || A line from the point where the "boom" arrives
     stickColor:0xff0000,// Color | Arrives line color in HEX, ex. 0xffffff - it's white
-    stickHeight:1.1, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickHeight:2, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.01, // Float | min ≈.001, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
@@ -77,7 +77,7 @@ const data=[
     repeatLineGo:100,
     showStick:true,
     stickColor:0x00ff00,
-    stickHeight:3,
+    stickHeight:1.5,
     stickWidth:4,
   },//FROM  2 // Central Africa
     {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
@@ -92,7 +92,7 @@ const data=[
       repeatBoom:100,
       repeatLineGo:100,
       showStick:true,
-      stickColor:0x333333,
+      stickColor:0x000000,
       stickHeight:1,
       stickWidth:.1,
   },//FROM  3 // South Amer
@@ -142,27 +142,25 @@ for(let i=0;i<data.length/2;i++){
       linewidth:5,
         vertexShader: `
         varying vec3 vPos;
-    void main() 
-    {
-      vPos = position;
-      vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-      gl_Position = projectionMatrix * modelViewPosition;
-    }`,
+      void main(){
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
         fragmentShader: `uniform vec3 origin;
         uniform vec3 color;
         varying vec3 vPos;
-        float limitDistance = 7.0;
+        float limitDistance = ${parseInt(data[tmp1].stickHeight*5)}.0;
         void main() {
-          float distance = clamp(length(vPos - origin), 0., limitDistance);
+          float distance = clamp(length(vPos - origin), 1., limitDistance);
           float opacity = 1. - distance / limitDistance;
           gl_FragColor = vec4(color, opacity);
         }`,
-            transparent:true,opacity: 1,depthWrite:false,
+            transparent:true,opacity: 1,//depthWrite:false,
     });
 
     const points = [];
-    let height=2//data[tmp1].stickHeight || 1.5;
-    if(height===1 || height < 1)height=1.2
+    let height=data[tmp1].stickHeight || 2;
+    if(height===1 || height < 1)height=2
     points.push( new THREE.Vector3( whereItArrives.x,whereItArrives.y,whereItArrives.z ) );
     points.push( new THREE.Vector3( whereItArrives.x*height,whereItArrives.y*height,whereItArrives.z*height ) );
 
@@ -296,7 +294,11 @@ const uniforms = {
         scene.add(
           new THREE.Mesh(
             new THREE.IcosahedronBufferGeometry(rad-.005,16),
-            new THREE.MeshBasicMaterial({color:params.mapPoints.hiddenShpereColor})
+            new THREE.MeshBasicMaterial({
+              color:params.mapPoints.hiddenShpereColor,
+              transparent:true,
+              opacity:1,
+            })
           )
         )
       }
