@@ -1,6 +1,6 @@
 # threejs-webgl-planet-for-production
 
-Planet / globe on threejs (webgl) with API interaction.
+Planet / globe / earth on threejs (webgl) with API interaction.
 
 At the moment, the API is implemented only statically.
 
