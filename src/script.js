@@ -42,24 +42,26 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
-    showBackMap:true, // Removes the view from the planet map that is in the background
-    showSphereToHideBackSide:true, // IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
-    hiddenShpereColor:0x0000ff,// If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
+    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background
+    showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
+    hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
   reset: ()=>controls.reset()
 }
-
-
-//const tmpFrom={lat:32.622876, lon:107.523152}//Китай
-//const tmpTo={lat:-26.164493,lon:134.742407}//Австралия
 
 const data=[
   { lat:32.622876, // Earth coordinate latitude
     lon:107.523152, // Earth coordinate longitude
     lineSpeed:5, // How fast does the animation of the line go from point A to point B
-    lineColor:0x0000ff,
-    boomSpeed: 500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
-    boomRadius: .5, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+    lineColor:0xff00ff,
+    boomSpeed: 3500,//500 - 5000 || THREE.Math.randomInt(2500, 5000)
+    boomRadius: 3, // .5 - 3 || 5 * THREE.Math.randFloat(.2, .7)
+    repeatBoom:100,
+    repeatLineGo:100,
+    showStick:true,
+    stickColor:0xff0000,
+    stickHeight:THREE.Math.randFloat(.5, 2).toFixed(2),
+    stickWidth:.1,
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
 
@@ -80,6 +82,7 @@ if(!Number.isInteger(data.length/2%2)){
 
 const impacts = [];
 const trails = [];
+//const planes=[];
 let tmp=0,tmp1=0
 const tweenGroup = new TWEEN.Group()
 for(let i=0;i<data.length/2;i++){
@@ -96,9 +99,34 @@ for(let i=0;i<data.length/2;i++){
     console.log(data[tmp1],data[tmp1+1]);
     throw new Error('Check data lat OR lon!')
   }
+  const whereItArrives=cTv(data[tmp1+1]);
+  console.log(data[tmp].showStick  ,  data[tmp].stickColor);
+  if(data[tmp].showStick){
+    const cylinder=new THREE.Mesh(
+      new THREE.BoxBufferGeometry(
+        data[tmp1].stickWidth || .05,
+        data[tmp1].stickWidth || .05,
+        data[tmp1].stickHeight || .5
+      ),
+      new THREE.MeshBasicMaterial({
+        color:data[tmp1].stickColor || 0xffffff,
+        side:THREE.DoubleSide,
+      })
+    )
+    const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.1) || 1.05
+    cylinder.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
+    cylinder.lookAt(new THREE.Vector3());
+    //cylinder.rotation.set(
+    //  cylinder.rotation.x*.5,
+    //  cylinder.rotation.y*.5,
+    //  cylinder.rotation.z,
+    //)
+    if(group)group.add(cylinder)
+  }
+
   const o=Object.create({
     prevPosition: cTv(data[tmp1]),
-    impactPosition: cTv(data[tmp1+1]),
+    impactPosition: whereItArrives,
     impactMaxRadius: parseFloat(data[tmp1].boomRadius) || 5 * THREE.Math.randFloat(.2, .7),
     impactRatio: 0,
     trailRatio: {value: 0},
@@ -116,12 +144,12 @@ for(let i=0;i<data.length/2;i++){
   // \ JFT
   // Wave
   /* const w= */
-  const boomSpeed=parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000);
+  //if(data[tmp1].repeatBoom)
   new TWEEN.Tween({ value:0},tweenGroup)
-  .to({ value: 1 }, boomSpeed)
+  .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
   .onUpdate(val => {
     o.impactRatio = val.value;
-  }).start().repeat(Infinity)
+  }).start().repeat(data[tmp1].repeatBoom || Infinity)
 
   // Lines
   makeTrail(i,data[tmp1].lineColor);
@@ -133,7 +161,7 @@ for(let i=0;i<data.length/2;i++){
     o.trailRatio.value = val.value;
   })
   //t.chain(w)
-  t.start().repeat(Infinity)
+  t.start().repeat(data[tmp1].repeatLineGo || Infinity)
   if(tmp===1){
     tmp1+=2;  tmp=0
   }else{
@@ -364,13 +392,12 @@ function setPath(l, startPoint, endPoint, peakHeight, cycles) {
     impacts[l.userData.idx].trailLength.value = l.geometry.attributes.lineDistance.array[99];
     l.material.dashSize = 7
 }
-  //LESS 2-12
- function cTv(coordObj={lat:48.5125,lon:2.2055}){//coordinates to vector | Default: Paris
+function cTv(coordObj={lat:48.5125,lon:2.2055}){//coordinates to vector | Default: Paris
   const parisSpherical = {
     lat: THREE.Math.degToRad(90 - coordObj.lat),
     lon: THREE.Math.degToRad(coordObj.lon)
   };
-  const radius = 5;// соответствует радиусу карты планеты
+  const radius = 5;// corresponds to the radius of the planet map
   const vector=new THREE.Vector3().setFromSphericalCoords(
     radius,
     parisSpherical.lat,
@@ -378,12 +405,9 @@ function setPath(l, startPoint, endPoint, peakHeight, cycles) {
   );
   return vector
 }
-  // \ LESS 2-12
 scene.add(group)
 
-// \ our code
-
-window.addEventListener( 'resize', onWindowResize() )
+window.addEventListener( 'resize', onWindowResize )
 
 renderer.setAnimationLoop( () => {
   // our code
@@ -392,6 +416,9 @@ renderer.setAnimationLoop( () => {
   group.rotation.y += 0.001
   // \
   renderer.render(scene, camera)
+  //planes.forEach(e=>{
+  //  e.lookAt(camera.position);
+  //})
 })
 
 //Fix to compute canvas width/height

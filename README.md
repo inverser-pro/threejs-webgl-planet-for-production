@@ -23,6 +23,7 @@ My code is distributed free of charge, under the MIT license.
 
 ## I used Three.js Starter
 Courtesy of Bruno Simon of https://threejs-journey.xyz/
+https://github.com/designcourse/threejs-webpack-starter
 
 ## Setup
 Download [Node.js](https://nodejs.org/en/download/).
