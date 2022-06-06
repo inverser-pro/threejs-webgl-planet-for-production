@@ -41,7 +41,7 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
-    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background
+    showBackMap:false, // BOOLEAN | Removes the view from the planet map that is in the background
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
     hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
@@ -53,10 +53,10 @@ const data=[
     lat:32.622876, // REQUIRED | Earth coordinate latitude
     lon:107.523152, // REQUIRED | Earth coordinate longitude
     lineSpeed:5, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
-    lineWidth:2,// Float | min ≈.1, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width
+    lineWidth:10,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
     lineColor:0xcccccc,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
-    boomNeed:false,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
-    boomSpeed: 3500,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
+    boomNeed:true,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
+    boomSpeed: 5000,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: 3, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
     repeatBoom:100,// Infinity or Integer || 1, 2, 1000, Infinity | Number of repeats "boom"
     repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
@@ -138,7 +138,8 @@ for(let i=0;i<data.length/2;i++){
       uniforms: {
         color: {value: new THREE.Color(data[tmp1].stickColorTo || 0xffffff)},
         color2: {value: new THREE.Color(data[tmp1].stickColorFrom ||0xffffff)},
-        origin: {value: new THREE.Vector3()}
+        origin: {value: new THREE.Vector3()},
+        limitDistance: {value: parseInt(data[tmp1].stickHeight*5)},
       },
       linewidth:1,
         vertexShader: `
@@ -156,64 +157,42 @@ for(let i=0;i<data.length/2;i++){
         uniform vec3 color;
         uniform vec3 color2;
         uniform vec3 origin;
-        float limitDistance = ${parseInt(data[tmp1].stickHeight*5)}.0;
+        uniform float limitDistance;
         varying vec3 vPos;
         void main() {
           //float distance = clamp(length(vPos.y - origin), 1., limitDistance);
           vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.);
           float distance = length(center);
-          float opacity = smoothstep(1.,.3,distance);
-          gl_FragColor = vec4(mix(color,color2, vUv.y), opacity);
+          float opacity = smoothstep(.3,1.,distance);
+          gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
         }
-        `,
-      transparent:true,opacity:0,
+        `,  transparent: true,
     });
-
     const points = [];
     let height=data[tmp1].stickHeight || 2;
     if(height===1 || height < 1)height=2
     points.push( new THREE.Vector3( whereItArrives.x,whereItArrives.y,whereItArrives.z ) );
     points.push( new THREE.Vector3( whereItArrives.x*height,whereItArrives.y*height,whereItArrives.z*height ) );
-
-    //const geometry = new THREE.BufferGeometry().setFromPoints( points );
-    const geometry = new THREE.CylinderBufferGeometry(data[tmp1].stickWidth,0,data[tmp1].stickHeight);
-    const line = new THREE.Mesh( geometry, material );
+    const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth,data[tmp1].stickHeight);
+    const mesh = new THREE.Mesh( geometry, material );
     const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.085) || 1.05
-    line.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
-    line.lookAt(new THREE.Vector3());
-    line.rotateX(Math.PI * 0.5);
-    group.add(line)
-    //const cylinder=new THREE.Mesh(
-    //  new THREE.BoxBufferGeometry(
-    //    data[tmp1].stickWidth || .01,
-    //    data[tmp1].stickWidth || .01,
-    //    data[tmp1].stickHeight || .5
-    //  ),
-    //  material
-    //  //new THREE.MeshBasicMaterial({
-    //  //  color:data[tmp1].stickColor || 0xffffff,
-    //  //  side:THREE.FrontSide,
-    //  //  transparent:true,
-    //  //  opacity: 0,
-    //  //})
-    //)
-    //const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.1) || 1.05
-    //cylinder.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
-    //cylinder.lookAt(new THREE.Vector3());
-    //if(group)group.add(cylinder)
-    //let interval=setInterval(()=>{
-    //  if(isMapLoaded){
-    //    clearInterval(interval);
-    //    interval=undefined
-    //    anime({targets:cylinder.scale,z:[.5,1],delay:100,easing,duration:2000,})
-    //    anime({targets:cylinder.material,opacity:[0,1],delay:100,easing,duration:2000})
-    //    anime({targets:cylinder.position,
-    //    x:[whereItArrives.x*1.09,whereItArrives.x*stickHeight],
-    //    y:[whereItArrives.y*1.09,whereItArrives.y*stickHeight],
-    //    z:[whereItArrives.z*1.09,whereItArrives.z*stickHeight],
-    //    delay:100,easing,duration:2000,})
-    //  }
-    //},100);
+    mesh.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
+    mesh.lookAt(new THREE.Vector3());
+    mesh.rotateX(Math.PI * -.5);
+    mesh.scale.set(0,0,0);
+    group.add(mesh)
+    let interval=setInterval(()=>{
+      if(isMapLoaded){
+        clearInterval(interval);
+        interval=undefined
+        anime({targets:mesh.scale,x:1,y:1,z:1,easing,duration:2000,})
+        anime({targets:mesh.position,
+        x:[whereItArrives.x*.9,whereItArrives.x*stickHeight],
+        y:[whereItArrives.y*.9,whereItArrives.y*stickHeight],
+        z:[whereItArrives.z*.9,whereItArrives.z*stickHeight],
+        delay:1000,easing,duration:2000,})
+      }
+    },100);
   }
   const o=Object.create({
     prevPosition: cTv(data[tmp1]),
