@@ -1,6 +1,8 @@
-# threejs-webgl-planet-for-production
+# ThreeJS WEBGL planet for production
 
-Planet / globe / earth on threejs (webgl) with API interaction.
+![](https://github.com/inverser-pro/threejs-webgl-planet-for-production/blob/main/static/Planet_screenshot.jpg?raw=true)
+
+## Planet / globe / earth on threejs (webgl) with API interaction.
 
 At the moment, the API is implemented only statically.
 
