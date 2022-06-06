@@ -32,18 +32,19 @@ const group=new THREE.Group();// empty groupe for add all rotation object
 
 const params = {
   colors: {
-    base: 0xffffff,// Base map color | FOR COLOR USE 0x -> FFFFFF -> AND ANY HEX COLOR VALUE
-    gradInner: 0xc7c7c7, // Inner gradient of "boom"
-    gradOuter: 0x464646, // Outer gradient of "boom"
-    lineColor: 0xcd390b, // Color lines
+    base: '#ffffff',// HEX Color | Base map color | FOR COLOR USE 0x -> FFFFFF -> AND ANY HEX COLOR VALUE
+    gradInner: '#c7c7c7', // HEX Color | Inner gradient of "boom"
+    gradOuter: '#464646', // HEX Color | Outer gradient of "boom"
+    lineColor: '#cd390b', // HEX Color | Color lines
   },
   mapPoints:{
-    sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
-    opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
-    countOfPoints:25000,// INT ONLY ex. 1000 - 40000
+    sizeOfPoints:0.5,// !FLOAT ONLY! | MIN: 0.1 , MAX: 0.4
+    opacityOfOceanPoints:0.1,// !FLOAT ONLY! | ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
+    countOfPoints:25000,// INT ONLY | ex. 1000 - 40000 | The more — the more points on the planet, but the more difficult the calculations
     showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background: ;
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
-    hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
+    hiddenShpereColor:'#0000ff',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
+    hiddenSphereOpacity:.1,
   },
   reset: ()=>controls.reset()
 }
@@ -273,14 +274,16 @@ const uniforms = {
       const g = BufferGeometryUtils.mergeBufferGeometries(geoms);
       if(params.mapPoints.showSphereToHideBackSide)params.mapPoints.showBackMap=false;
       let sideOfMap=(params.mapPoints.showBackMap)?THREE.DoubleSide:THREE.FrontSide;
-      if(!params.mapPoints.showBackMap){ // Add sphere hide
+      if(!params.mapPoints.showBackMap && params.mapPoints.showSphereToHideBackSide){ // Add sphere hide
+        let isTransparent=true;
+        if(params.mapPoints.hiddenSphereOpacity===undefined || params.mapPoints.hiddenSphereOpacity === 1)isTransparent=false
         scene.add(
           new THREE.Mesh(
             new THREE.IcosahedronBufferGeometry(rad-.005,16),
             new THREE.MeshBasicMaterial({
-              color:params.mapPoints.hiddenShpereColor || '#ff0000',
-              //transparent:true,
-              //opacity:1,
+              color:params.mapPoints.hiddenShpereColor || '#000000',
+              transparent:isTransparent,
+              opacity:params.mapPoints.hiddenSphereOpacity || 1,
             })
           )
         )
