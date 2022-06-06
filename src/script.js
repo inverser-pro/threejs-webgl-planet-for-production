@@ -41,7 +41,7 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
-    showBackMap:false, // BOOLEAN | Removes the view from the planet map that is in the background
+    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background: ;
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
     hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
@@ -53,17 +53,17 @@ const data=[
     lat:32.622876, // REQUIRED | Earth coordinate latitude
     lon:107.523152, // REQUIRED | Earth coordinate longitude
     lineSpeed:5, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
-    lineWidth:10,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
-    lineColor:0xcccccc,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
+    lineWidth:1,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
+    lineColor:0xff0000,// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
     boomNeed:true,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
     boomSpeed: 5000,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
-    boomRadius: 3, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
+    boomRadius: 1, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
     repeatBoom:100,// Infinity or Integer || 1, 2, 1000, Infinity | Number of repeats "boom"
     repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
     showStick:true, // Boolean || A line from the point where the "boom" arrives
     stickColorTo:0xff0000,// Color | Default 0xffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
-    stickColorFrom:0xffffff,// Color | Default 0xffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
-    stickHeight:2, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickColorFrom:'#000000',// Color | Default 0xffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickHeight:2, // min ≈2, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.01, // Float | min ≈.001, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
@@ -132,6 +132,7 @@ for(let i=0;i<data.length/2;i++){
     throw new Error('Check data lat OR lon!')
   }
   const whereItArrives=cTv(data[tmp1+1]);
+  if(data[tmp1].stickHeight)data[tmp1].stickHeight=1.1
   if(data[tmp1].showStick){
     const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
       side:THREE.DoubleSide,
@@ -168,12 +169,7 @@ for(let i=0;i<data.length/2;i++){
         }
         `,  transparent: true,
     });
-    const points = [];
-    let height=data[tmp1].stickHeight || 2;
-    if(height===1 || height < 1)height=2
-    points.push( new THREE.Vector3( whereItArrives.x,whereItArrives.y,whereItArrives.z ) );
-    points.push( new THREE.Vector3( whereItArrives.x*height,whereItArrives.y*height,whereItArrives.z*height ) );
-    const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth,data[tmp1].stickHeight);
+    const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
     const mesh = new THREE.Mesh( geometry, material );
     const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.085) || 1.05
     mesh.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
@@ -282,16 +278,16 @@ const uniforms = {
           geoms.push(g);
       }
       const g = BufferGeometryUtils.mergeBufferGeometries(geoms);
-      let sideOfMap=(params.mapPoints.showBackMap)?THREE.DoubleSide:THREE.FrontSide;
       if(params.mapPoints.showSphereToHideBackSide)params.mapPoints.showBackMap=false;
+      let sideOfMap=(params.mapPoints.showBackMap)?THREE.DoubleSide:THREE.FrontSide;
       if(!params.mapPoints.showBackMap){ // Add sphere hide
         scene.add(
           new THREE.Mesh(
             new THREE.IcosahedronBufferGeometry(rad-.005,16),
             new THREE.MeshBasicMaterial({
-              color:params.mapPoints.hiddenShpereColor,
-              transparent:true,
-              opacity:1,
+              color:params.mapPoints.hiddenShpereColor || '#ff0000',
+              //transparent:true,
+              //opacity:1,
             })
           )
         )
@@ -386,7 +382,7 @@ function makeTrail(idx,color,lineWidth){
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
   const m = new THREE.LineDashedMaterial({
   	color: color || params.colors.lineColor,
-    linewidth: lineWidth,
+    linewidth: lineWidth || 1,
     transparent: true,
   	onBeforeCompile: shader => {
     	shader.uniforms.actionRatio = impacts[idx].trailRatio;
