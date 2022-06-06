@@ -48,27 +48,32 @@ const params = {
   },
   reset: ()=>controls.reset()
 }
+// An array for forming lines, "boom", as well as sticks (highlighting the point where the line arrives)
+//The point of arrival of the line and the point from where it flies is made up of two array elements: 0, 1; 2, 3 and so on.
+//In the first object of one of the points (the first one is where the line flies from), you can add some user data in order to unify the default settings
 
+//!!! Only two values in it are mandatory: latitude and longitude
 const data=[
+  // This forms three objects: a line, a "boom", a stick
   {
     lat:32.622876, // REQUIRED | Earth coordinate latitude
     lon:107.523152, // REQUIRED | Earth coordinate longitude
     lineSpeed:2, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
     lineWidth:1,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
-    lineColor:'#ff0000',// Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
-    boomNeed:true,// Boolean || If you do not need "boom", then set the value to false. By default, "boom" passes
-    boomSpeed: 5000,// Integer | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
-    boomRadius: 2, // Integer | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
-    repeatBoom:100,// Infinity or Integer || 1, 2, 1000, Infinity | Number of repeats "boom"
-    repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
-    showStick:true, // Boolean || A line from the point where the "boom" arrives
-    stickColorTo:'#ff0000',// Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
-    stickColorFrom:'#000000',// Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
-    stickHeight:2, // min ≈2, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
-    stickWidth:.2, // Float | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    lineColor:'#ff0000',// HEX Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
+    lineRepeats:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
+    boomNeed:true,// Boolean | 'Boom' is added by default | If you do not need "boom", then set the value to false. By default, "boom" passes
+    boomSpeed: 5000,// Integer | Default (some random): THREE.Math.randInt(2500, 5000) | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
+    boomRadius: 2, // Integer | Default (some random): [5 * THREE.Math.randFloat(.2, .7)] | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
+    boomRepeat:100,// Infinity or Integer | Default: Infinity | 1, 2, 1000, Infinity | Number of repeats "boom"
+    showStick:true, // Boolean | Default: false | A line from the point where the "boom" arrives
+    stickColorTo:'#ff0000',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickColorFrom:'#000000',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickWidth:.2, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
-
+  // \\ This forms three objects: a line, a "boom", a stick
   {
     lat:7.466688, lon:19.987692,
     lineSpeed:5,
@@ -76,8 +81,8 @@ const data=[
     boomNeed:true,
     boomSpeed: 3500,
     boomRadius: 3,
-    repeatBoom:100,
-    repeatLineGo:100,
+    boomRepeat:100,
+    lineRepeats:100,
     showStick:true,
     stickColorTo:0x00ff00,
     stickColorFrom:0xffffff,
@@ -93,8 +98,8 @@ const data=[
       boomNeed:false,
       boomSpeed: 3500,
       boomRadius: 3,
-      repeatBoom:100,
-      repeatLineGo:100,
+      boomRepeat:100,
+      lineRepeats:100,
       showStick:true,
       stickColorTo:0x0000ff,
       stickColorFrom:0xff0000,
@@ -200,7 +205,7 @@ for(let i=0;i<data.length/2;i++){
   if(data[tmp1].boomNeed===undefined || data[tmp1].boomNeed!==false){
     new TWEEN.Tween({ value:0},tweenGroup)
     .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
-    .onUpdate(val => {o.impactRatio = val.value}).start().repeat(data[tmp1].repeatBoom || Infinity)
+    .onUpdate(val => {o.impactRatio = val.value}).start().repeat(data[tmp1].boomRepeat || Infinity)
   }
   // Lines
   makeTrail(i,data[tmp1].lineColor || 0xffffff,data[tmp1].lineWidth || .1);
@@ -210,7 +215,7 @@ for(let i=0;i<data.length/2;i++){
   .to({value: 1}, path.geometry.attributes.lineDistance.array[99] / speed * 1000)
   .onUpdate( val => {o.trailRatio.value = val.value})
   //t.chain(w)
-  t.start().repeat(data[tmp1].repeatLineGo || Infinity)
+  t.start().repeat(data[tmp1].lineRepeats || Infinity)
   if(tmp===1){
     tmp1+=2;  tmp=0
   }else{
