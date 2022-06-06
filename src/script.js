@@ -1,3 +1,4 @@
+
 import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -40,7 +41,7 @@ const params = {
     sizeOfPoints:0.3,// FLOAT ONLY | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// FLOAT ONLY ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY ex. 1000 - 40000
-    showBackMap:false, // BOOLEAN | Removes the view from the planet map that is in the background
+    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
     hiddenShpereColor:0x0000ff,// 0xHEX | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
   },
@@ -60,8 +61,9 @@ const data=[
     repeatBoom:100,// Infinity or Integer || 1, 2, 1000, Infinity | Number of repeats "boom"
     repeatLineGo:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
     showStick:true, // Boolean || A line from the point where the "boom" arrives
-    stickColor:0xff0000,// Color | Arrives line color in HEX, ex. 0xffffff - it's white
-    stickHeight:2.5, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickColorTo:0xff0000,// Color | Default 0xffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickColorFrom:0xffffff,// Color | Default 0xffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickHeight:2, // min ≈1.1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.01, // Float | min ≈.001, max ≈10 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
@@ -76,9 +78,10 @@ const data=[
     repeatBoom:100,
     repeatLineGo:100,
     showStick:true,
-    stickColor:0x00ff00,
-    stickHeight:2,
-    stickWidth:4,
+    stickColorTo:0x00ff00,
+    stickColorFrom:0xffffff,
+    stickHeight:1.5,
+    stickWidth:.05,
   },//FROM  2 // Central Africa
     {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
@@ -92,8 +95,9 @@ const data=[
       repeatBoom:100,
       repeatLineGo:100,
       showStick:true,
-      stickColor:0x333333,
-      stickHeight:2,
+      stickColorTo:0x0000ff,
+      stickColorFrom:0xff0000,
+      stickHeight:1,
       stickWidth:.1,
   },//FROM  3 // South Amer
   {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
@@ -129,44 +133,55 @@ for(let i=0;i<data.length/2;i++){
   }
   const whereItArrives=cTv(data[tmp1+1]);
   if(data[tmp1].showStick){
-
     const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
+      side:THREE.DoubleSide,
       uniforms: {
-        color: {
-          value: new THREE.Color(data[tmp1].stickColor || 0xffffff)
-        },
-        origin: {
-          value: new THREE.Vector3()
-        }
+        color: {value: new THREE.Color(data[tmp1].stickColorTo || 0xffffff)},
+        color2: {value: new THREE.Color(data[tmp1].stickColorFrom ||0xffffff)},
+        origin: {value: new THREE.Vector3()}
       },
-      linewidth:5,
+      linewidth:1,
         vertexShader: `
+        varying vec2 vUv;
         varying vec3 vPos;
-      void main(){
-        vPos = position;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }`,
-        fragmentShader: `uniform vec3 origin;
+        void main(){
+          vUv=uv;
+          vPos = position;
+          vec3 pos=position.xyz * sin(1.);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+        `,
+        fragmentShader: `
+        varying vec2 vUv;
         uniform vec3 color;
+        uniform vec3 color2;
+        uniform vec3 origin;
+        float limitDistance = ${parseInt(data[tmp1].stickHeight*5)}.0;
         varying vec3 vPos;
-        float limitDistance = ${parseInt(data[tmp1].stickHeight)*5}.0;
         void main() {
-          float distance = clamp(length(vPos - origin), 1., limitDistance);
-          float opacity = 1. - distance / limitDistance;
-          gl_FragColor = vec4(color, opacity);
-        }`,
-            transparent:true,opacity: 1,//depthWrite:false,
+          //float distance = clamp(length(vPos.y - origin), 1., limitDistance);
+          vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.);
+          float distance = length(center);
+          float opacity = smoothstep(1.,.3,distance);
+          gl_FragColor = vec4(mix(color,color2, vUv.y), opacity);
+        }
+        `,
+      transparent:true,opacity:0,
     });
 
     const points = [];
-    let height=data[tmp1].stickHeight || 1.6;
-    if(height===1 || height < 1)height=1.6
+    let height=data[tmp1].stickHeight || 2;
+    if(height===1 || height < 1)height=2
     points.push( new THREE.Vector3( whereItArrives.x,whereItArrives.y,whereItArrives.z ) );
     points.push( new THREE.Vector3( whereItArrives.x*height,whereItArrives.y*height,whereItArrives.z*height ) );
 
-    const geometry = new THREE.BufferGeometry().setFromPoints( points );
-    const line = new THREE.Line( geometry, material );
+    //const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const geometry = new THREE.CylinderBufferGeometry(data[tmp1].stickWidth,0,data[tmp1].stickHeight);
+    const line = new THREE.Mesh( geometry, material );
+    const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.085) || 1.05
+    line.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
     line.lookAt(new THREE.Vector3());
+    line.rotateX(Math.PI * 0.5);
     group.add(line)
     //const cylinder=new THREE.Mesh(
     //  new THREE.BoxBufferGeometry(
@@ -263,14 +278,14 @@ const uniforms = {
           long = long + dlong;
           sph.setFromVector3(p);
           dummyObj.lookAt(p);
-          dummyObj.updateMatrix(); 
+          dummyObj.updateMatrix();
           const g =  new THREE.PlaneBufferGeometry(2, 2);
           g.applyMatrix4(dummyObj.matrix);
           g.translate(p.x, p.y, p.z);
           const centers = [
-            p.x, p.y, p.z, 
-            p.x, p.y, p.z, 
-            p.x, p.y, p.z, 
+            p.x, p.y, p.z,
+            p.x, p.y, p.z,
+            p.x, p.y, p.z,
             p.x, p.y, p.z
           ];
           const uv = new THREE.Vector2(
