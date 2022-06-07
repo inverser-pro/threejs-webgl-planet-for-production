@@ -32,12 +32,12 @@ const group=new THREE.Group();// empty groupe for add all rotation object
 
 const params = {
   colors: {
-    base: '#ffffff',// HEX Color | Base map color | FOR COLOR USE 0x -> FFFFFF -> AND ANY HEX COLOR VALUE
     gradInner: '#c7c7c7', // HEX Color | Inner gradient of "boom"
     gradOuter: '#464646', // HEX Color | Outer gradient of "boom"
-    lineColor: '#cd390b', // HEX Color | Color lines
+    lineColor: '#cd390b', // HEX Color | Default color lines
   },
   mapPoints:{
+    base: '#ffffff',// HEX Color | Base map color | FOR COLOR USE #FFFFFF -> AND ANY HEX COLOR VALUE
     sizeOfPoints:0.5,// !FLOAT ONLY! | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// !FLOAT ONLY! | ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY | ex. 1000 - 40000 | The more — the more points on the planet, but the more difficult the calculations
@@ -56,8 +56,8 @@ const params = {
 const data=[
   // This forms three objects: a line, a "boom", a stick
   {
-    lat:32.622876, // REQUIRED | Earth coordinate latitude
-    lon:107.523152, // REQUIRED | Earth coordinate longitude
+    lat:32.622876, // REQUIRED | Float ex. 42.0 | Earth coordinate latitude
+    lon:107.523152, // REQUIRED | Float ex. 42.0 | Earth coordinate longitude
     lineSpeed:2, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
     lineWidth:1,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
     lineColor:'#ff0000',// HEX Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
@@ -109,20 +109,23 @@ const data=[
   {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
 ]
 
-const maxImpactAmount = data.length/2;
-function isFloat(n){return Number(n) === n && n % 1 !== 0;}
+const maxImpactAmount = data.length/2; // Constant for determining the number "boom"
+function isFloat(n){return Number(n) === n && n % 1 !== 0;} // Flote of numbers
+//Checking the correspondence of the quantity of data in the object with data. If the data is odd, then the rest of the script will not work. Since the data is probably violated.
 if(!Number.isInteger(data.length/2%2)){
   throw new Error('Check data array. The number of array elements is odd!')
 }
 
-const impacts = [];
-const trails = [];
-let tmp=0,tmp1=0,isMapLoaded=false
+const impacts = []; // Array for "boom"
+const trails = []; // Array for animated lines
+let tmp=0, // For the cycle that sorting out the values of the object with the data
+  tmp1=0, // ~^~
+  isMapLoaded=false // Determines when the planet card is formed
 const tweenGroup = new TWEEN.Group()
 const easing='easeInOutSine'// https://codepen.io/kcjpop/pen/GvdQdX
 
-for(let i=0;i<data.length/2;i++){
-  if(
+for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of the object with the data
+  if( // We check the availability of strictly necessary data in the array with data
     !data[tmp1].lat
     ||!data[tmp1].lon
     ||!isFloat(data[tmp1].lat)
@@ -131,12 +134,12 @@ for(let i=0;i<data.length/2;i++){
     ||!data[tmp1+1].lon
     ||!isFloat(data[tmp1+1].lat)
     ||!isFloat(data[tmp1+1].lon)
-  ){
+  ){ // If the check has not passed, then we stop the script
     console.log(data[tmp1],data[tmp1+1]);
     throw new Error('Check data lat OR lon!')
   }
-  const whereItArrives=cTv(data[tmp1+1]);
-  if(!data[tmp1].stickHeight)data[tmp1].stickHeight=1.1;
+  const whereItArrives=cTv(data[tmp1+1]); // Constant taking the value where the line flies
+  if(!data[tmp1].stickHeight)data[tmp1].stickHeight=1.1; // Setting the default value, in the absence of data from an object with data
   if(data[tmp1].showStick){
     const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
       side:THREE.DoubleSide,
@@ -148,8 +151,8 @@ for(let i=0;i<data.length/2;i++){
       },
       linewidth:1,
         vertexShader: `
-        varying vec2 vUv;
-        varying vec3 vPos;
+        varying vec2 vUv; // We create a variable, then to convey it to a fragmentShader
+        varying vec3 vPos; // We create a variable, then to convey it to a fragmentShader
         void main(){
           vUv=uv;
           vPos = position;
@@ -158,34 +161,35 @@ for(let i=0;i<data.length/2;i++){
         }
         `,
         fragmentShader: `
-        varying vec2 vUv;
-        uniform vec3 color;
-        uniform vec3 color2;
-        uniform vec3 origin;
-        uniform float limitDistance;
-        varying vec3 vPos;
+        varying vec2 vUv; // We accept data from vertexShader
+        uniform vec3 color; // We accept data from uniforms
+        uniform vec3 color2; // We accept data from uniforms
+        uniform vec3 origin; // We accept data from uniforms
+        uniform float limitDistance; // We accept data from uniforms
+        varying vec3 vPos; // We accept data from vertexShader
         void main() {
-          vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.);
-          float distance = length(center);
-          float opacity = smoothstep(.3,1.,distance);
+          vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.); // We set a conditional center for one cylinder
+          float distance = length(center); // Determine its size
+          float opacity = smoothstep(.3,1.,distance); // We make a soft fill
           gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
         }
         `,  transparent: true,
     });
+    // Creating and positioning the cylinder - sticks
     const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
     const mesh = new THREE.Mesh( geometry, material );
     const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.085) || 1.05
     mesh.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
-    mesh.lookAt(new THREE.Vector3());
-    mesh.rotateX(Math.PI * -.5);
+    mesh.lookAt(new THREE.Vector3()); // We ask him to look at his normal at the center of the planet
+    mesh.rotateX(Math.PI * -.5); // Since it has normal in the middle, before that he was “lying” on the planet, and this code makes him stand perpendicular to it
     mesh.scale.set(0,0,0);
     group.add(mesh)
-    let interval=setInterval(()=>{
+    let interval=setInterval(()=>{ // Some hack to give the opportunity to load the planet’s map itself, and then show the sticks themselves
       if(isMapLoaded){
         clearInterval(interval);
         interval=undefined
-        anime({targets:mesh.scale,x:1,y:1,z:1,easing,duration:2000,})
-        anime({targets:mesh.position,
+        anime({targets:mesh.scale,x:1,y:1,z:1,easing,duration:2000,}) // We animize the scale
+        anime({targets:mesh.position, // We animize the position
         x:[whereItArrives.x*.9,whereItArrives.x*stickHeight],
         y:[whereItArrives.y*.9,whereItArrives.y*stickHeight],
         z:[whereItArrives.z*.9,whereItArrives.z*stickHeight],
@@ -193,7 +197,7 @@ for(let i=0;i<data.length/2;i++){
       }
     },100);
   }
-  const o=Object.create({
+  const o=Object.create({ // We create an object for the subsequent creation of "boom" and lines
     prevPosition: cTv(data[tmp1]),
     impactPosition: whereItArrives,
     impactMaxRadius: parseFloat(data[tmp1].boomRadius) || 5 * THREE.Math.randFloat(.2, .7),
@@ -202,16 +206,16 @@ for(let i=0;i<data.length/2;i++){
     trailLength: {value: 0},
   })
   impacts.push(o);
-  if(data[tmp1].boomNeed===undefined || data[tmp1].boomNeed!==false){
+  if(data[tmp1].boomNeed===undefined || data[tmp1].boomNeed!==false){ // If the “boom” is not indicated in the object with data for a particular object, then by default it will be shown
     new TWEEN.Tween({ value:0},tweenGroup)
     .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
     .onUpdate(val => {o.impactRatio = val.value}).start().repeat(data[tmp1].boomRepeat || Infinity)
   }
   // Lines
-  makeTrail(i,data[tmp1].lineColor || 0xffffff,data[tmp1].lineWidth || .1);
+  makeTrail(i,data[tmp1].lineColor || 0xffffff,data[tmp1].lineWidth || .1); // Creating the line itself. This function also fills the trails array
   const path = trails[i];
   const speed = data[tmp1].lineSpeed || 2;
-  const t=new TWEEN.Tween({value: 0})
+  const t=new TWEEN.Tween({value: 0}) // We anmile "boom" and lines
   .to({value: 1}, path.geometry.attributes.lineDistance.array[99] / speed * 1000)
   .onUpdate( val => {o.trailRatio.value = val.value})
   //t.chain(w)
@@ -222,7 +226,7 @@ for(let i=0;i<data.length/2;i++){
     tmp++;  (tmp1===0)?tmp1=2:tmp1++
   }
 }
-const uniforms = {
+const uniforms = { // For Shader with "boom"
   impacts: {value: impacts},
   maxSize: {value: .04},
   minSize: {value: .03},
@@ -231,7 +235,7 @@ const uniforms = {
   gradInner: {value: new THREE.Color(params.colors.gradInner)},
   gradOuter: {value: new THREE.Color(params.colors.gradOuter)}
 };
-(()=>{
+(()=>{ // Creation of the planet map
     const dummyObj = new THREE.Object3D()
     const p = new THREE.Vector3()
     const sph = new THREE.Spherical()
@@ -294,7 +298,7 @@ const uniforms = {
         )
       }
       const m = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(params.colors.base),
+        color: new THREE.Color(params.mapPoints.base),
         side: sideOfMap,
         transparent:true,
         onBeforeCompile: shader => {
@@ -377,7 +381,7 @@ const uniforms = {
     })
   })()
 
-function makeTrail(idx,color,lineWidth){
+function makeTrail(idx,color,lineWidth){ // Creation of lines
   const pts = new Array(100 * 3).fill(0);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
@@ -467,7 +471,7 @@ function cTv(coordObj={lat:48.5125,lon:2.2055}){//coordinates to vector | Defaul
   );
   return vector
 }
-scene.add(group)
+scene.add(group) // Add a group that rotates: the map of the planet, "boom", lines, sticks
 
 window.addEventListener( 'resize', onWindowResize )
 
