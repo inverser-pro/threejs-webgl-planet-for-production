@@ -1,4 +1,4 @@
-# ThreeJS WEBGL planet for production
+# ThreeJS WEBGL 3D planet for production
 
 ![](https://github.com/inverser-pro/threejs-webgl-planet-for-production/blob/main/static/Planet_screenshot.jpg?raw=true)
 
