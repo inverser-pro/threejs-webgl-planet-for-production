@@ -173,7 +173,7 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
           float opacity = smoothstep(.3,1.,distance); // We make a soft fill
           gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
         }
-        `,  transparent: true,
+        `,  transparent: true, 
     });
     // Creating and positioning the cylinder - sticks
     const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
