@@ -5,6 +5,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 import {BufferGeometryUtils} from 'three/examples/jsm/utils/BufferGeometryUtils'
 import {TWEEN} from 'three/examples/jsm/libs/tween.module.min'
+// JFT [Just for test]
+import Stats from 'three/examples/jsm/libs/stats.module'
+// \ JFT
+import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader'
+import { TextGeometry } from 'three/src/geometries/TextGeometry'
+import { FontLoader } from 'three/src/loaders/FontLoader'
+//import { FontLoader } from '../src/FontLoader';
 
 import anime from 'animejs/lib/anime'
 //import * as dat from 'dat.gui'
@@ -46,6 +53,7 @@ const params = {
     hiddenShpereColor:'#0000ff',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
     hiddenSphereOpacity:.1,
   },
+  font:'/fonts/Cuprum-VariableFont_wght.ttf',
   reset: ()=>controls.reset()
 }
 // An array for forming lines, "boom", as well as sticks (highlighting the point where the line arrives)
@@ -67,10 +75,16 @@ const data=[
     boomRadius: 2, // Integer | Default (some random): [5 * THREE.Math.randFloat(.2, .7)] | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
     boomRepeat:100,// Infinity or Integer | Default: Infinity | 1, 2, 1000, Infinity | Number of repeats "boom"
     showStick:true, // Boolean | Default: false | A line from the point where the "boom" arrives
-    stickColorTo:'#ff0000',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
-    stickColorFrom:'#000000',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickColorTo:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickColorFrom:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
     stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
-    stickWidth:.2, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    // NEW
+    text:'China, Pekin | Běijīng | 北京', // String | Max: 50 symbol | ex. 'This is Pekin'
+    textColor: '#ff0000', // HEX Color | Default #ffffff
+    textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
+    textBgColor: '#ffffff', // HEX Color | Default #0086ff
+    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
   // \\ This forms three objects: a line, a "boom", a stick
@@ -91,23 +105,23 @@ const data=[
   },//FROM  2 // Central Africa
     {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
-    {
-      lat:48.358527, lon:-99.761561,
-      lineSpeed:5,
-      lineColor:'#333333',
-      boomNeed:false,
-      boomSpeed: 3500,
-      boomRadius: 3,
-      boomRepeat:100,
-      lineRepeats:100,
-      showStick:true,
-      stickColorTo:'#0000ff',
-      stickColorFrom:'#ff0000',
-      stickHeight:1,
-      stickWidth:.1,
+  {
+    lat:48.358527, lon:-99.761561,
+    lineSpeed:5,
+    lineColor:'#333333',
+    boomNeed:false,
+    boomSpeed: 3500,
+    boomRadius: 3,
+    boomRepeat:100,
+    lineRepeats:100,
+    showStick:true,
+    stickColorTo:'#0000ff',
+    stickColorFrom:'#ff0000',
+    stickHeight:1,
+    stickWidth:.1,
   },//FROM  3 // South Amer
-  {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
-]
+    {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
+];
 
 const maxImpactAmount = data.length/2; // Constant for determining the number "boom"
 function isFloat(n){return Number(n) === n && n % 1 !== 0;} // Flote of numbers
@@ -115,6 +129,37 @@ function isFloat(n){return Number(n) === n && n % 1 !== 0;} // Flote of numbers
 if(!Number.isInteger(data.length/2%2)){
   throw new Error('Check data array. The number of array elements is odd!')
 }
+
+// TRY FONT
+function createText(text,pos,rot,size,font,color=0xffffff){
+  text=new String(text);
+  const textGeo = new TextGeometry(text,{
+    font,
+    size,
+    height: .004,
+    curveSegments: 12
+  } );
+  const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
+  text=new THREE.Mesh(textGeo,textMaterial);
+  text.position.set(pos[0],pos[1],pos[2]);
+  text.rotation.set(rot[0],rot[1],rot[2]);
+  /* text.updateMatrix(); */
+  scene.add(text);
+  //parent.add(text);
+  //return text;
+}
+
+const ttfLoader = new TTFLoader()
+const fontLoader = new FontLoader()
+ttfLoader.load(
+  params.font,
+  fnt=>{
+      fnt=fontLoader.parse(fnt)
+      createText('Привет, Мир!',[0,0,0],[0,0,0],1,fnt)
+    }
+)
+// \ TRY FONT
+
 
 const impacts = []; // Array for "boom"
 const trails = []; // Array for animated lines
@@ -150,30 +195,29 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
         limitDistance: {value: parseInt(data[tmp1].stickHeight*5)},
       },
       linewidth:1,
-        vertexShader: `
-        varying vec2 vUv; // We create a variable, then to convey it to a fragmentShader
-        varying vec3 vPos; // We create a variable, then to convey it to a fragmentShader
-        void main(){
-          vUv=uv;
-          vPos = position;
-          vec3 pos=position.xyz * sin(1.);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-        `,
-        fragmentShader: `
-        varying vec2 vUv; // We accept data from vertexShader
-        uniform vec3 color; // We accept data from uniforms
-        uniform vec3 color2; // We accept data from uniforms
-        uniform vec3 origin; // We accept data from uniforms
-        uniform float limitDistance; // We accept data from uniforms
-        varying vec3 vPos; // We accept data from vertexShader
-        void main() {
-          vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.); // We set a conditional center for one cylinder
-          float distance = length(center); // Determine its size
-          float opacity = smoothstep(.3,1.,distance); // We make a soft fill
-          gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
-        }
-        `,  transparent: true, 
+      vertexShader: `
+      varying vec2 vUv; // We create a variable, then to convey it to a fragmentShader
+      varying vec3 vPos; // We create a variable, then to convey it to a fragmentShader
+      void main(){
+        vUv=uv;
+        vPos = position;
+        vec3 pos=position.xyz * sin(1.);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }`,
+      fragmentShader: `
+      varying vec2 vUv; // We accept data from vertexShader
+      uniform vec3 color; // We accept data from uniforms
+      uniform vec3 color2; // We accept data from uniforms
+      uniform vec3 origin; // We accept data from uniforms
+      uniform float limitDistance; // We accept data from uniforms
+      varying vec3 vPos; // We accept data from vertexShader
+      void main() {
+        vec2 center = vec2((vUv.y - 1.)*1.,(vUv.y - 1.)*1.); // We set a conditional center for one cylinder
+        float distance = length(center); // Determine its size
+        float opacity = smoothstep(.3,1.,distance); // We make a soft fill
+        gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
+      }`,
+      transparent: true, 
     });
     // Creating and positioning the cylinder - sticks
     const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
@@ -474,12 +518,18 @@ function cTv(coordObj={lat:48.5125,lon:2.2055}){//coordinates to vector | Defaul
 scene.add(group) // Add a group that rotates: the map of the planet, "boom", lines, sticks
 
 window.addEventListener( 'resize', onWindowResize )
-
+// JFT
+const stats = Stats()
+document.body.appendChild(stats.dom)
+// \ JFT
 renderer.setAnimationLoop( () => {
   TWEEN.update()
   tweenGroup.update()
   group.rotation.y += 0.001
   renderer.render(scene, camera)
+  // JFT
+  stats.update()
+  // \ JFT
 })
 
 //Fix to compute canvas width/height
