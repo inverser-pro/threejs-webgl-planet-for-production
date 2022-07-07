@@ -17,17 +17,17 @@ import anime from 'animejs/lib/anime'
 //import * as dat from 'dat.gui'
 
 //const gui = new dat.GUI()
-const do_cument=document;
-const ca_nvas=do_cument.querySelector('.webgl');
-if(!ca_nvas)throw 'no canvas.webgl';
-const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)}
+const dc=document;
+const cns=dc.querySelector('.webgl');
+if(!cns)throw 'no canvas.webgl';
+const sizes = {width: parseInt(window.getComputedStyle(cns).width),  height: parseInt(window.getComputedStyle(cns).height)}
 
 let o;
 const scene = new THREE.Scene();
 //scene.background = new THREE.Color('blue');
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.01, 50);
 camera.position.set(0, 10, 10);
-const renderer = new THREE.WebGLRenderer({canvas:ca_nvas,antialias: true,alpha: true});
+const renderer = new THREE.WebGLRenderer({canvas:cns,antialias: true,alpha: true});
 renderer.setSize(sizes.width , sizes.height);
 
 renderer.setClearColor(0x000000, 0);
@@ -83,8 +83,9 @@ const data=[
     text:'China, Pekin | Běijīng | 北京', // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
-    textBgColor: '#ffffff', // HEX Color | Default #0086ff
-    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
+    textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
+    textStickColor: '#ff00ff', // HEX Color | Default #ff00ff
+    textDistance: 1.3, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
   // \\ This forms three objects: a line, a "boom", a stick
@@ -102,6 +103,12 @@ const data=[
     stickColorFrom:'#ffffff',
     stickHeight:1.5,
     stickWidth:.05,
+    // NEW
+    text:'Central Africa', // String | Max: 50 symbol | ex. 'This is Pekin'
+    textColor: '#ff00ff', // HEX Color | Default #ffffff
+    textSize: .3, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
+    textBgColor: '#ffffff', // HEX Color | Default #0086ff
+    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
   },//FROM  2 // Central Africa
     {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
 
@@ -119,6 +126,12 @@ const data=[
     stickColorFrom:'#ff0000',
     stickHeight:1,
     stickWidth:.1,
+    // NEW
+    text:'South Amer', // String | Max: 50 symbol | ex. 'This is Pekin'
+    textColor: '#ff00aa', // HEX Color | Default #ffffff
+    textSize: .2, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
+    textBgColor: '#ffffff', // HEX Color | Default #0086ff
+    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
   },//FROM  3 // South Amer
     {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
 ];
@@ -131,31 +144,48 @@ if(!Number.isInteger(data.length/2%2)){
 }
 
 // TRY FONT
-function createText(text,pos,rot,size,font,color=0xffffff){
+function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,multiplyScalar=1,color=0xffffff,bgPlane='#0086ff'){
+  // bgPlane — If this parameter is present, then we add a plan from behind
   text=new String(text);
   const textGeo = new TextGeometry(text,{
     font,
     size,
     height: .004,
-    curveSegments: 12
+    curveSegments:1
   } );
   const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
   text=new THREE.Mesh(textGeo,textMaterial);
-  text.position.set(pos[0],pos[1],pos[2]);
-  text.rotation.set(rot[0],rot[1],rot[2]);
-  /* text.updateMatrix(); */
-  scene.add(text);
-  //parent.add(text);
-  //return text;
-}
+  text.position.set(pos[0],pos[1],pos[2]).multiplyScalar(multiplyScalar);
+  text.lookAt(new THREE.Vector3())
+  text.rotateY(rotY)
+  text.translateY(.1)
+  text.translateX(.1)
+// https://stackoverflow.com/questions/33758313/get-size-of-object3d-in-three-js
+  const bbox = new THREE.Box3().setFromObject(text);
+  const widthZ=bbox.max.z-bbox.min.z
+  if(bgPlane){
+    const plane=new THREE.Mesh(
+      new THREE.PlaneGeometry(widthZ*2/1.4,size*2),
+      new THREE.MeshBasicMaterial({color:bgPlane,side:THREE.DoubleSide})
+    );
+    plane.position.set(pos[0],pos[1],pos[2]).multiplyScalar(multiplyScalar*.9999)
+    plane.lookAt(new THREE.Vector3)
+    //plane.translateY(size/2*1.1)
+    plane.translateX(widthZ*2/1.2*-.4)
+    //plane.rotateY(rotY)
+    group.add(plane)
+  }
 
+  group.add(text);
+}
+let font
 const ttfLoader = new TTFLoader()
 const fontLoader = new FontLoader()
 ttfLoader.load(
   params.font,
   fnt=>{
       fnt=fontLoader.parse(fnt)
-      createText('Привет, Мир!',[0,0,0],[0,0,0],1,fnt)
+      font=fnt
     }
 )
 // \ TRY FONT
@@ -194,7 +224,6 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
         origin: {value: new THREE.Vector3()},
         limitDistance: {value: parseInt(data[tmp1].stickHeight*5)},
       },
-      linewidth:1,
       vertexShader: `
       varying vec2 vUv; // We create a variable, then to convey it to a fragmentShader
       varying vec3 vPos; // We create a variable, then to convey it to a fragmentShader
@@ -216,8 +245,7 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
         float distance = length(center); // Determine its size
         float opacity = smoothstep(.3,1.,distance); // We make a soft fill
         gl_FragColor = vec4(mix(color2,color, vUv.y), opacity);
-      }`,
-      transparent: true, 
+      }`,  transparent: true, 
     });
     // Creating and positioning the cylinder - sticks
     const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
@@ -264,6 +292,34 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
   .onUpdate( val => {o.trailRatio.value = val.value})
   //t.chain(w)
   t.start().repeat(data[tmp1].lineRepeats || Infinity)
+
+// TRY ADD FONT AND MORE...
+  const forText=Object.create({
+    text:data[tmp1].text,
+    textColor:data[tmp1].textColor || '#ffffff',
+    textSize:data[tmp1].textSize || .1,
+    textBgColor:data[tmp1].textBgColor || '#0086ff', // If this parameter is present, then we add a plan from behind
+    textStickColor:data[tmp1].textStickColor || '#0086ff',
+    textDistance:data[tmp1].textDistance || 1.1,
+  })
+  //console.log(d,data[tmp1].text);
+  // We are waiting for the font to download over the network
+  if(!font){ // Wait
+    const sti=setInterval(() => {
+      if(font){
+        clearInterval(sti)
+        if(forText.text)createText(forText.text,[whereItArrives.x,whereItArrives.y,whereItArrives.z],undefined,forText.textSize,font,forText.textDistance,forText.textColor,forText.textBgColor)
+      }
+    }, 100);
+  }
+  // TRY IT
+    else{ // Font is loaded
+      console.log('font loaed');
+    }
+
+// \ TRY ADD FONT AND MORE...
+
+
   if(tmp===1){
     tmp1+=2;  tmp=0
   }else{
@@ -536,7 +592,7 @@ renderer.setAnimationLoop( () => {
 setTimeout(()=>{onWindowResize()},1)
 
 function onWindowResize() {
-  const sizes = {width: parseInt(window.getComputedStyle(ca_nvas).width),  height: parseInt(window.getComputedStyle(ca_nvas).height)};
+  const sizes = {width: parseInt(window.getComputedStyle(cns).width),  height: parseInt(window.getComputedStyle(cns).height)};
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
   renderer.setSize( sizes.width , sizes.height );
