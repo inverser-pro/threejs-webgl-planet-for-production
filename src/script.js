@@ -166,14 +166,38 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   if(bgPlane){
     const plane=new THREE.Mesh(
       new THREE.PlaneGeometry(widthZ*2/1.4,size*2),
-      new THREE.MeshBasicMaterial({color:bgPlane,side:THREE.DoubleSide})
+      new THREE.ShaderMaterial({color:bgPlane,side:THREE.DoubleSide,transparent:true,
+        vertexShader: `
+        varying vec3 vPosition;
+        void main() {
+            vPosition = position.xzy;
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+        }`,
+          fragmentShader: `
+        varying vec3 vPosition;
+
+        void main() {    
+            vec2 uv = vPosition.xz;
+            uv.y *= 1.2;
+            
+            float dist = length(uv);    
+
+            float distToEdge = dist - 11.0;
+
+            float pixelWidth = fwidth(dist);
+            float a = smoothstep(pixelWidth * 1.2, pixelWidth, distToEdge);
+          
+            gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+        }`,
+      })
     );
-    plane.position.set(pos[0],pos[1],pos[2]).multiplyScalar(multiplyScalar*.9999)
-    plane.lookAt(new THREE.Vector3)
-    //plane.translateY(size/2*1.1)
-    plane.translateX(widthZ*2/1.2*-.4)
+    //plane.position.set(pos[0],pos[1],pos[2])//.multiplyScalar(multiplyScalar*.9999)
+    //plane.lookAt(new THREE.Vector3)
+    plane.translateY(size/2)
+    plane.translateX(widthZ/1.5)
     //plane.rotateY(rotY)
-    group.add(plane)
+    text.add(plane)
   }
 
   group.add(text);
