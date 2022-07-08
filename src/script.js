@@ -22,6 +22,7 @@ const cns=dc.querySelector('.webgl');
 if(!cns)throw 'no canvas.webgl';
 const sizes = {width: parseInt(window.getComputedStyle(cns).width),  height: parseInt(window.getComputedStyle(cns).height)}
 
+
 let o;
 const scene = new THREE.Scene();
 //scene.background = new THREE.Color('blue');
@@ -34,6 +35,9 @@ renderer.setClearColor(0x000000, 0);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 //controls.enablePan = true;
+
+/* const light = new THREE.DirectionalLight(0xffffff,1)
+scene.add(light) */
 
 const group=new THREE.Group();// empty groupe for add all rotation object
 
@@ -84,7 +88,7 @@ const data=[
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#ff00ff', // HEX Color | Default #ff00ff
+    textStickColor: '#000000', // HEX Color | Default #ff00ff
     textDistance: 1.3, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
   },//FROM 1 China
   {lat:-26.164493,lon:134.742407},//TO   1 Australia
@@ -144,14 +148,11 @@ if(!Number.isInteger(data.length/2%2)){
 }
 
 // TRY FONT
-function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,multiplyScalar=1,color=0xffffff,bgPlane='#0086ff'){
+function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,multiplyScalar=1,color=0xffffff,bgPlane,textStickColor){
   // bgPlane — If this parameter is present, then we add a plan from behind
   text=new String(text);
   const textGeo = new TextGeometry(text,{
-    font,
-    size,
-    height: .004,
-    curveSegments:1
+    font,  size,  height: .004,  curveSegments:1
   } );
   const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
   text=new THREE.Mesh(textGeo,textMaterial);
@@ -164,31 +165,28 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   const bbox = new THREE.Box3().setFromObject(text);
   const widthZ=bbox.max.z-bbox.min.z
   if(bgPlane){
-    const plane=new THREE.Mesh(
+    /* const plane=new THREE.Mesh(
       new THREE.PlaneGeometry(widthZ*2/1.4,size*2),
-      new THREE.ShaderMaterial({color:bgPlane,side:THREE.DoubleSide,transparent:true,
-        vertexShader: `
-        varying vec3 vPosition;
+      new THREE.ShaderMaterial({side:THREE.DoubleSide,transparent:true,
+        uniforms: {
+          color: {value: new THREE.Color(bgPlane || 0xffffff)},
+        },
+        vertexShader:`varying vec3 vPosition;
+        varying vec2 vUv;
         void main() {
-            vPosition = position.xzy;
-            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-            gl_Position = projectionMatrix * mvPosition;
+          vUv = uv;
+          vPosition = position.xyz;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
         }`,
-          fragmentShader: `
-        varying vec3 vPosition;
-
-        void main() {    
-            vec2 uv = vPosition.xz;
-            uv.y *= 1.2;
-            
-            float dist = length(uv);    
-
-            float distToEdge = dist - 11.0;
-
-            float pixelWidth = fwidth(dist);
-            float a = smoothstep(pixelWidth * 1.2, pixelWidth, distToEdge);
-          
-            gl_FragColor = vec4(1.0, 1.0, 1.0, a);
+        fragmentShader:`varying vec3 vPosition;
+        uniform vec3 color;
+        varying vec2 vUv;
+        void main(){
+          vec2 center = vec2(vUv.x,vUv.y-.5);
+          float dist = length(center);
+          float aplha = step(dist,.25);
+          gl_FragColor = vec4(color, aplha);//dist > .25 ? .0 : 1.
         }`,
       })
     );
@@ -197,11 +195,51 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     plane.translateY(size/2)
     plane.translateX(widthZ/1.5)
     //plane.rotateY(rotY)
-    text.add(plane)
-  }
+    text.add(plane) */
+    const x = 0
+    const y = 0
+    const width = widthZ*2/1.4
+    const height = size*2
+    const radius = size*.9
 
+    const shape = new THREE.Shape();// https://stackoverflow.com/questions/65567873/create-a-plane-with-curved-edges-using-planegeometry-three-js
+    shape.moveTo( x, y + radius );
+    shape.lineTo( x, y + height - radius );
+    shape.quadraticCurveTo( x, y + height, x + radius, y + height );
+    shape.lineTo( x + width - radius, y + height );
+    shape.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
+    shape.lineTo( x + width, y + radius );
+    shape.quadraticCurveTo( x + width, y, x + width - radius, y );
+    shape.lineTo( x + radius, y );
+    shape.quadraticCurveTo( x, y, x, y + radius );
+    const plane = new THREE.Mesh( new THREE.ShapeBufferGeometry( shape ),  new THREE.MeshBasicMaterial({color:bgPlane || 0x0086ff,side:THREE.DoubleSide}))
+    //plane.position.set(pos[0],pos[1],pos[2])
+    //plane.lookAt(new THREE.Vector3)
+    plane.translateY(-height/3.5)
+    plane.translateX(-.05)
+    plane.translateZ(-.001)
+    text.add(plane)
+    if(textStickColor){
+      const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+      const points = [];
+      points.push( new THREE.Vector3( pos[0],pos[1],pos[2] ) );
+      points.push( new THREE.Vector3(text.position.x,text.position.y,text.position.z) );
+      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints( points ), new THREE.LineBasicMaterial( { color: textStickColor || 0x0086ff } ) );
+      group.add( line );
+
+      // point for line
+      const point = new THREE.Mesh(
+        new THREE.CircleGeometry(size/2,24),
+        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+      )
+      point.lookAt(new THREE.Vector3)
+      point.position.set(text.position.x,text.position.y,text.position.z)
+      group.add(point)
+    }
+  }
   group.add(text);
 }
+
 let font
 const ttfLoader = new TTFLoader()
 const fontLoader = new FontLoader()
@@ -325,14 +363,16 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
     textBgColor:data[tmp1].textBgColor || '#0086ff', // If this parameter is present, then we add a plan from behind
     textStickColor:data[tmp1].textStickColor || '#0086ff',
     textDistance:data[tmp1].textDistance || 1.1,
+    textStickColor:data[tmp1].textStickColor || '#0086ff',
   })
   //console.log(d,data[tmp1].text);
   // We are waiting for the font to download over the network
   if(!font){ // Wait
-    const sti=setInterval(() => {
+    let sti=setInterval(() => {
       if(font){
         clearInterval(sti)
-        if(forText.text)createText(forText.text,[whereItArrives.x,whereItArrives.y,whereItArrives.z],undefined,forText.textSize,font,forText.textDistance,forText.textColor,forText.textBgColor)
+        sti=undefined
+        if(forText.text)createText(forText.text,[whereItArrives.x,whereItArrives.y,whereItArrives.z],undefined,forText.textSize,font,forText.textDistance,forText.textColor,forText.textBgColor,forText.textStickColor)
       }
     }, 100);
   }
