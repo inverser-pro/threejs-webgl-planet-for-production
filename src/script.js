@@ -67,7 +67,7 @@ const params = {
 //!!! Only two values in it are mandatory: latitude and longitude
 const data=[
   // This forms three objects: a line, a "boom", a stick
-  {
+  { // FROM CHINA
     lat:32.622876, // REQUIRED | Float ex. 42.0 | Earth coordinate latitude
     lon:107.523152, // REQUIRED | Float ex. 42.0 | Earth coordinate longitude
     lineSpeed:2, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
@@ -75,33 +75,35 @@ const data=[
     lineColor:'#ff0000',// HEX Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
     lineRepeats:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
     boomNeed:true,// Boolean | 'Boom' is added by default | If you do not need "boom", then set the value to false. By default, "boom" passes
-    boomSpeed: 5000,// Integer | Default (some random): THREE.Math.randInt(2500, 5000) | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
+    boomSpeed: 4999,// Integer | Default (some random): THREE.Math.randInt(2500, 5000) | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
     boomRadius: 2, // Integer | Default (some random): [5 * THREE.Math.randFloat(.2, .7)] | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
-    boomRepeat:100,// Infinity or Integer | Default: Infinity | 1, 2, 1000, Infinity | Number of repeats "boom"
+    boomRepeat:Infinity,// Infinity or Integer | Default: Infinity | 1, 2, 1000, Infinity | Number of repeats "boom"
     showStick:true, // Boolean | Default: false | A line from the point where the "boom" arrives
     stickColorTo:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
     stickColorFrom:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
     stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     // NEW
-    text:'China, Pekin | Běijīng | 北京', // String | Max: 50 symbol | ex. 'This is Pekin'
+    text:`China, Pekin | Běijīng | 北京
+132`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
     textStickColor: '#000000', // HEX Color | Default #ff00ff
     textDistance: 1.3, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
-  },//FROM 1 China
-  {lat:-26.164493,lon:134.742407},//TO   1 Australia
+    to:{lat:-26.164493,lon:134.742407},//TO   1 Australia
+  },
+  
   // \\ This forms three objects: a line, a "boom", a stick
   {
-    lat:7.466688, lon:19.987692,
-    lineSpeed:5,
+    lat:7.466688, lon:19.987692,//FROM  2 // Central Africa
+    lineSpeed:2,
     lineColor:'#ff0000',
+    lineRepeats:Infinity,
     boomNeed:true,
     boomSpeed: 3500,
-    boomRadius: 3,
+    boomRadius: 2,
     boomRepeat:100,
-    lineRepeats:100,
     showStick:true,
     stickColorTo:'#00ff00',
     stickColorFrom:'#ffffff',
@@ -109,49 +111,73 @@ const data=[
     stickWidth:.05,
     // NEW
     text:'Central Africa', // String | Max: 50 symbol | ex. 'This is Pekin'
-    textColor: '#ff00ff', // HEX Color | Default #ffffff
+    textColor: '#00cc99', // HEX Color | Default #ffffff
     textSize: .3, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
     textStickColor: '#ff00ff', // HEX Color | Default #ffffff
-  },//FROM  2 // Central Africa
-    {lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
+    to:{lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
+  },
 
   {
-    lat:48.358527, lon:-99.761561,
-    lineSpeed:5,
-    lineColor:'#333333',
-    boomNeed:false,
-    boomSpeed: 3500,
+    lat:48.358527, lon:-99.761561,//FROM  3 // South Amer
+    lineSpeed:2,
+    lineColor:'#00f96f',
+    boomNeed:true,
+    boomSpeed: 2500,
     boomRadius: 3,
-    boomRepeat:100,
-    lineRepeats:100,
+    boomRepeat:Infinity,
+    lineRepeats:Infinity,
     showStick:true,
     stickColorTo:'#0000ff',
     stickColorFrom:'#ff0000',
     stickHeight:1,
     stickWidth:.1,
     // NEW
-    text:'South Amer', // String | Max: 50 symbol | ex. 'This is Pekin'
+    text:`South Amer
+Souls: 0;
+Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff00aa', // HEX Color | Default #ffffff
-    textSize: .2, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
+    textSize: .07, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
     textStickColor: '#ff00ff', // HEX Color | Default #ffffff
-  },//FROM  3 // South Amer
-    {lat:76.910298, lon:-40.348415},//TO 3 // Greenland
+    to:{lat:76.910298, lon:-40.348415},//TO 3 // Greenland
+  },
+
+  {
+    lat:65.242150, lon:149.801448, // FROM 4 East RU
+    lineSpeed:2, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
+    lineWidth:1,// Float | min ≈.1, max ≈10 | Worked only on Linux system | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line width — https://stackoverflow.com/questions/11638883/thickness-of-lines-using-three-linebasicmaterial
+    lineColor:'#ff0000',// HEX Color | Default params.colors.lineColor | Line color in HEX, ex. 0xffffff - it's white
+    lineRepeats:100, // Infinity or Integer || 1, 2, 1000, Infinity | Number of line flight repetitions
+    boomNeed:true,// Boolean | 'Boom' is added by default | If you do not need "boom", then set the value to false. By default, "boom" passes
+    boomSpeed: 2000,// Integer | Default (some random): THREE.Math.randInt(2500, 5000) | min ≈500 , max ≈5000 || THREE.Math.randomInt(2500, 5000)
+    boomRadius: 3, // Integer | Default (some random): [5 * THREE.Math.randFloat(.2, .7)] | min ≈.5 , max ≈3 || 5 * THREE.Math.randFloat(.2, .7)
+    boomRepeat:Infinity,// Infinity or Integer | Default: Infinity | 1, 2, 1000, Infinity | Number of repeats "boom"
+    showStick:true, // Boolean | Default: false | A line from the point where the "boom" arrives
+    stickColorTo:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickColorFrom:'#ffffff',// HEX Color | Default #ffffff | Arrives line color in HEX, ex. 0xffffff - it's white | To create gradient
+    stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
+    // NEW
+    text:`I Love USA`, // String | Max: 50 symbol | ex. 'This is Pekin'
+    textColor: '#ff0000', // HEX Color | Default #ffffff
+    textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
+    textBgColor: '#f9f9f9', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
+    textStickColor: '#000000', // HEX Color | Default #ff00ff
+    textDistance: 1.1, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
+    to:{lat:38.870829359139556, lon: -77.05594503672475},//TO 4 // Washington
+    //to:{lat:7.952571, lon:-73.546554},//TO 4 // Washington
+  },
 ];
 
-const maxImpactAmount = data.length/2; // Constant for determining the number "boom"
+const maxImpactAmount = data.length; // Constant for determining the number "boom"
 function isFloat(n){return Number(n) === n && n % 1 !== 0;} // Flote of numbers
-//Checking the correspondence of the quantity of data in the object with data. If the data is odd, then the rest of the script will not work. Since the data is probably violated.
-if(!Number.isInteger(data.length/2%2)){
-  throw new Error('Check data array. The number of array elements is odd!')
-}
 
 // TRY FONT
 function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,multiplyScalar=1,color=0xffffff,bgPlane,textStickColor){
   // bgPlane — If this parameter is present, then we add a plan from behind
-  text=new String(text);
-  const textGeo = new TextGeometry(text,{
+  const text_=new String(text);
+  const textGeo = new TextGeometry(text_,{
     font,  size,  height: .004,  curveSegments:1
   } );
   const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
@@ -160,7 +186,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   text.lookAt(new THREE.Vector3())
   text.rotateY(rotY)
   text.translateY(.1)
-  text.translateX(.1)
+  text.translateX(.5)
 // https://stackoverflow.com/questions/33758313/get-size-of-object3d-in-three-js
   const bbox = new THREE.Box3().setFromObject(text);
   const widthZ=bbox.max.z-bbox.min.z
@@ -196,12 +222,15 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     plane.translateX(widthZ/1.5)
     //plane.rotateY(rotY)
     text.add(plane) */
-    const x = 0
-    const y = 0
+    let factor=2
+    const len = (text_.match(/\n/g)||[]).length
+    if(len){
+      factor*=len+1
+    }
+    const x = 0;  const y = 0
     const width = widthZ*2/1.4
-    const height = size*2
+    const height = size*factor
     const radius = size*.9
-
     const shape = new THREE.Shape();// https://stackoverflow.com/questions/65567873/create-a-plane-with-curved-edges-using-planegeometry-three-js
     shape.moveTo( x, y + radius );
     shape.lineTo( x, y + height - radius );
@@ -215,9 +244,9 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     const plane = new THREE.Mesh( new THREE.ShapeBufferGeometry( shape ),  new THREE.MeshBasicMaterial({color:bgPlane || 0x0086ff,side:THREE.DoubleSide}))
     //plane.position.set(pos[0],pos[1],pos[2])
     //plane.lookAt(new THREE.Vector3)
-    plane.translateY(-height/3.5)
+    plane.translateY(-height/3.5*factor/2.5)
     plane.translateX(-.05)
-    plane.translateZ(-.001)
+    plane.translateZ(-.01)
     text.add(plane)
     if(textStickColor){
       const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -229,11 +258,12 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
 
       // point for line
       const point = new THREE.Mesh(
-        new THREE.CircleGeometry(size/2,24),
+        new THREE.CircleGeometry(size/10,24),
         new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
       )
-      point.lookAt(new THREE.Vector3)
       point.position.set(text.position.x,text.position.y,text.position.z)
+      point.lookAt(new THREE.Vector3)
+      point.translateZ(-.01)
       group.add(point)
     }
   }
@@ -261,30 +291,30 @@ let tmp=0, // For the cycle that sorting out the values of the object with the d
 const tweenGroup = new TWEEN.Group()
 const easing='easeInOutSine'// https://codepen.io/kcjpop/pen/GvdQdX
 
-for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of the object with the data
+for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the object with the data
   if( // We check the availability of strictly necessary data in the array with data
-    !data[tmp1].lat
-    ||!data[tmp1].lon
-    ||!isFloat(data[tmp1].lat)
-    ||!isFloat(data[tmp1].lon)
-    ||!data[tmp1+1].lat
-    ||!data[tmp1+1].lon
-    ||!isFloat(data[tmp1+1].lat)
-    ||!isFloat(data[tmp1+1].lon)
+    !data[i].lat
+    ||!data[i].lon
+    ||!isFloat(data[i].lat)
+    ||!isFloat(data[i].lon)
+    ||!data[i].to.lat
+    ||!data[i].to.lon
+    ||!isFloat(data[i].to.lat)
+    ||!isFloat(data[i].to.lon)
   ){ // If the check has not passed, then we stop the script
-    console.log(data[tmp1],data[tmp1+1]);
+    console.log(data[i],data[i].to);
     throw new Error('Check data lat OR lon!')
   }
-  const whereItArrives=cTv(data[tmp1+1]); // Constant taking the value where the line flies
-  if(!data[tmp1].stickHeight)data[tmp1].stickHeight=1.1; // Setting the default value, in the absence of data from an object with data
-  if(data[tmp1].showStick){
+  const whereItArrives=cTv(data[i].to); // Constant taking the value where the line flies
+  if(!data[i].stickHeight)data[i].stickHeight=1.1; // Setting the default value, in the absence of data from an object with data
+  if(data[i].showStick){
     const material = new THREE.ShaderMaterial({//https://discourse.threejs.org/t/draw-a-line-with-a-simple-single-colour-fading-gradient/1775/32
       side:THREE.DoubleSide,
       uniforms: {
-        color: {value: new THREE.Color(data[tmp1].stickColorTo || 0xffffff)},
-        color2: {value: new THREE.Color(data[tmp1].stickColorFrom ||0xffffff)},
+        color: {value: new THREE.Color(data[i].stickColorTo || 0xffffff)},
+        color2: {value: new THREE.Color(data[i].stickColorFrom ||0xffffff)},
         origin: {value: new THREE.Vector3()},
-        limitDistance: {value: parseInt(data[tmp1].stickHeight*5)},
+        limitDistance: {value: parseInt(data[i].stickHeight*5)},
       },
       vertexShader: `
       varying vec2 vUv; // We create a variable, then to convey it to a fragmentShader
@@ -310,9 +340,9 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
       }`,  transparent: true, 
     });
     // Creating and positioning the cylinder - sticks
-    const geometry = new THREE.CylinderBufferGeometry(0,data[tmp1].stickWidth || .1,data[tmp1].stickHeight || 1.1);
+    const geometry = new THREE.CylinderBufferGeometry(0,data[i].stickWidth || .1,data[i].stickHeight || 1.1);
     const mesh = new THREE.Mesh( geometry, material );
-    const stickHeight=data[tmp1].stickHeight*(1/data[tmp1].stickHeight+.085) || 1.05
+    const stickHeight=data[i].stickHeight*(1/data[i].stickHeight+.085) || 1.05
     mesh.position.set(whereItArrives.x*stickHeight,whereItArrives.y*stickHeight,whereItArrives.z*stickHeight);
     mesh.lookAt(new THREE.Vector3()); // We ask him to look at his normal at the center of the planet
     mesh.rotateX(Math.PI * -.5); // Since it has normal in the middle, before that he was “lying” on the planet, and this code makes him stand perpendicular to it
@@ -331,39 +361,39 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
       }
     },100);
   }
-  const o=Object.create({ // We create an object for the subsequent creation of "boom" and lines
-    prevPosition: cTv(data[tmp1]),
+  const o_=Object.create({ // We create an object for the subsequent creation of "boom" and lines
+    prevPosition: cTv(data[i]),
     impactPosition: whereItArrives,
-    impactMaxRadius: parseFloat(data[tmp1].boomRadius) || 5 * THREE.Math.randFloat(.2, .7),
+    impactMaxRadius: parseFloat(data[i].boomRadius) || 5 * THREE.Math.randFloat(.2, .7),
     impactRatio: 0,
     trailRatio: {value: 0},
     trailLength: {value: 0},
   })
-  impacts.push(o);
-  if(data[tmp1].boomNeed===undefined || data[tmp1].boomNeed!==false){ // If the “boom” is not indicated in the object with data for a particular object, then by default it will be shown
-    new TWEEN.Tween({ value:0},tweenGroup)
-    .to({ value: 1 }, parseInt(data[tmp1].boomSpeed) || THREE.Math.randInt(2500, 5000))
-    .onUpdate(val => {o.impactRatio = val.value}).start().repeat(data[tmp1].boomRepeat || Infinity)
+  impacts.push(o_)
+  if(data[i].boomNeed===undefined || data[i].boomNeed!==false){ // If the “boom” is not indicated in the object with data for a particular object, then by default it will be shown
+    new TWEEN.Tween({ value:0})
+    .to({ value: 1 }, parseInt(data[i].boomSpeed) || THREE.Math.randInt(2500, 5000))
+    .onUpdate(val=>{o_.impactRatio = val.value}).start().repeat(data[i].boomRepeat || Infinity)
   }
   // Lines
-  makeTrail(i,data[tmp1].lineColor || 0xffffff,data[tmp1].lineWidth || .1); // Creating the line itself. This function also fills the trails array
+  makeTrail(i,data[i].lineColor || 0xffffff,data[i].lineWidth || .1); // Creating the line itself. This function also fills the trails array
   const path = trails[i];
-  const speed = data[tmp1].lineSpeed || 2;
+  const speed = data[i].lineSpeed || 2;
   const t=new TWEEN.Tween({value: 0}) // We anmile "boom" and lines
   .to({value: 1}, path.geometry.attributes.lineDistance.array[99] / speed * 1000)
-  .onUpdate( val => {o.trailRatio.value = val.value})
+  .onUpdate( val => {o_.trailRatio.value = val.value})
   //t.chain(w)
-  t.start().repeat(data[tmp1].lineRepeats || Infinity)
+  t.start().repeat(data[i].lineRepeats || Infinity)
 
 // TRY ADD FONT AND MORE...
   const forText=Object.create({
-    text:data[tmp1].text,
-    textColor:data[tmp1].textColor || '#ffffff',
-    textSize:data[tmp1].textSize || .1,
-    textBgColor:data[tmp1].textBgColor || '#0086ff', // If this parameter is present, then we add a plan from behind
-    textStickColor:data[tmp1].textStickColor || '#0086ff',
-    textDistance:data[tmp1].textDistance || 1.1,
-    textStickColor:data[tmp1].textStickColor || '#0086ff',
+    text:data[i].text,
+    textColor:data[i].textColor || '#ffffff',
+    textSize:data[i].textSize || .1,
+    textBgColor:data[i].textBgColor || '#0086ff', // If this parameter is present, then we add a plan from behind
+    textStickColor:data[i].textStickColor || '#0086ff',
+    textDistance:data[i].textDistance || 1.1,
+    textStickColor:data[i].textStickColor || '#0086ff',
   })
   //console.log(d,data[tmp1].text);
   // We are waiting for the font to download over the network
@@ -384,11 +414,11 @@ for(let i=0;i<data.length/2;i++){ // The cycle that sorting out the values of th
 // \ TRY ADD FONT AND MORE...
 
 
-  if(tmp===1){
+  /* if(tmp===1){
     tmp1+=2;  tmp=0
   }else{
     tmp++;  (tmp1===0)?tmp1=2:tmp1++
-  }
+  } */
 }
 const uniforms = { // For Shader with "boom"
   impacts: {value: impacts},
@@ -577,10 +607,10 @@ function makeTrail(idx,color,lineWidth){ // Creation of lines
       );
     }
   });
-  const l = new THREE.Line(g, m);
-  l.userData.idx = idx;
-  if(impacts[idx])setPath(l, impacts[idx].prevPosition, impacts[idx].impactPosition, 1);
-  trails.push(l);
+  const l = new THREE.Line(g, m)
+  l.userData.idx = idx
+  if(impacts[idx])setPath(l, impacts[idx].prevPosition, impacts[idx].impactPosition, 1)
+  trails.push(l)
 }
 // based on https://jsfiddle.net/prisoner849/fu59aved/
 function setPath(l, startPoint, endPoint, peakHeight, cycles) {
@@ -644,7 +674,6 @@ document.body.appendChild(stats.dom)
 // \ JFT
 renderer.setAnimationLoop( () => {
   TWEEN.update()
-  tweenGroup.update()
   group.rotation.y += 0.001
   renderer.render(scene, camera)
   // JFT
