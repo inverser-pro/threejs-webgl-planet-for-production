@@ -181,6 +181,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     font,  size,  height: .004,  curveSegments:1
   } );
   const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
+  // TEXT OBJ
   text=new THREE.Mesh(textGeo,textMaterial);
   text.position.set(pos[0],pos[1],pos[2]).multiplyScalar(multiplyScalar);
   text.lookAt(new THREE.Vector3())
@@ -190,12 +191,11 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
 // https://stackoverflow.com/questions/33758313/get-size-of-object3d-in-three-js
   const bbox = new THREE.Box3().setFromObject(text);
   const widthZ=bbox.max.z-bbox.min.z
+  anime({targets:text.scale,x:[0,1],y:[0,1],z:[0,1],duration:4000,easing})
   if(bgPlane){
     let factor=2
     const len = (text_.match(/\n/g)||[]).length
-    if(len){
-      factor*=len+1
-    }
+    if(len)factor*=len+1
     const x = 0;  const y = 0
     const width = widthZ*2/1.4
     const height = size*factor
@@ -209,30 +209,32 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     shape.lineTo( x + width, y + radius );
     shape.quadraticCurveTo( x + width, y, x + width - radius, y );
     shape.lineTo( x + radius, y );
-    shape.quadraticCurveTo( x, y, x, y + radius );
+    shape.quadraticCurveTo( x, y, x, y + radius )
+    // PLANE OBJ
     const plane = new THREE.Mesh( new THREE.ShapeBufferGeometry( shape ),  new THREE.MeshBasicMaterial({color:bgPlane || 0x0086ff,side:THREE.DoubleSide}))
-    //plane.position.set(pos[0],pos[1],pos[2])
-    //plane.lookAt(new THREE.Vector3)
     plane.translateY(-height/3.5*factor/2.5)
     plane.translateX(-.05)
     plane.translateZ(-.001)
     text.add(plane)
     if(textStickColor){
-      const points = []
-      points.push( new THREE.Vector3( pos[0],pos[1],pos[2] ) )
-      points.push( new THREE.Vector3(text.position.x,text.position.y,text.position.z) )
-      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints( points ), new THREE.LineBasicMaterial( { color: textStickColor || 0x0086ff } ) )
-      group.add( line )
-
+      const points=[]
+      points.push(new THREE.Vector3(pos[0],pos[1],pos[2]))
+      points.push(new THREE.Vector3(text.position.x,text.position.y,text.position.z))
+      // LINE OBJ
+      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({transparent:true, color:textStickColor || 0x0086ff}))
+      group.add(line)
+      anime({targets:line.material,opacity:[0,1],duration:4000,easing})
       // point for line
       const point = new THREE.Mesh(
-        new THREE.CircleGeometry(size/10,24),
+        new THREE.CircleGeometry(size/15,12),
         new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
       )
       point.position.set(text.position.x,text.position.y,text.position.z)
-      point.lookAt(new THREE.Vector3)
-      point.translateZ(-.001)
-      point.translateX(.04)
+      point.rotation.set(text.rotation.x,text.rotation.y,text.rotation.z)
+      //point.lookAt(new THREE.Vector3)
+      point.translateZ(.001)
+      //point.translateX(.04)
+      // POINT OBJ
       group.add(point)
     }
   }
