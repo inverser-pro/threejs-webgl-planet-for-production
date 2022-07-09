@@ -52,10 +52,12 @@ const params = {
     sizeOfPoints:0.5,// !FLOAT ONLY! | MIN: 0.1 , MAX: 0.4
     opacityOfOceanPoints:0.1,// !FLOAT ONLY! | ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY | ex. 1000 - 40000 | The more — the more points on the planet, but the more difficult the calculations
-    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background: ;
+    showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background | IMPORTANT!  if(showGlowedSphere===true)showBackMap=false
     showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
     hiddenShpereColor:'#0000ff',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
-    hiddenSphereOpacity:.1,
+    hiddenSphereOpacity:1,
+    showGlowedSphere:true,
+    showGlowedSphereColor:0x005caf,
   },
   font:'/fonts/Cuprum-VariableFont_wght.ttf',
   reset: ()=>controls.reset()
@@ -180,7 +182,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   const textGeo = new TextGeometry(text_,{
     font,  size,  height: .004,  curveSegments:1
   } );
-  const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.FrontSide});
+  const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.BackSide});
   // TEXT OBJ
   text=new THREE.Mesh(textGeo,textMaterial);
   text.position.set(pos[0],pos[1],pos[2]).multiplyScalar(multiplyScalar);
@@ -448,7 +450,7 @@ const uniforms = { // For Shader with "boom"
         if(params.mapPoints.hiddenSphereOpacity===undefined || params.mapPoints.hiddenSphereOpacity === 1)isTransparent=false
         scene.add(
           new THREE.Mesh(
-            new THREE.IcosahedronBufferGeometry(rad-.005,16),
+            new THREE.IcosahedronBufferGeometry(rad-.01,16),
             new THREE.MeshBasicMaterial({
               color:params.mapPoints.hiddenShpereColor || '#000000',
               transparent:isTransparent,
@@ -457,6 +459,45 @@ const uniforms = { // For Shader with "boom"
           )
         )
       }
+
+      // ADD GLOWED SPHERE
+      if(params.mapPoints.showGlowedSphere){
+        const shaderMaterial_GLOW=new THREE.ShaderMaterial({// Glow
+          uniforms:{
+                  "c":{type: "f", value:.5},// intencity
+                  "p":{type: "f", value:3.},// density
+                  "opacity":{type: "f", value:.7},// density
+                  glowColor: { type: "c", value: new THREE.Color(params.mapPoints.showGlowedSphereColor || 0x0086ff) },//0x00aaff
+                  viewVector: { type: "v3", value: new THREE.Vector3(0,0,2) }// glow rotation
+              },
+              vertexShader:`uniform vec3 viewVector;
+      uniform float c;
+      uniform float p;
+      varying float intensity;
+      void main(){
+      vec3 vNormal = normalize(normalMatrix * normal);
+      vec3 vNormel = normalize(normalMatrix * viewVector);
+      intensity = pow(c - dot(vNormal, vNormel), p);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+      }`,
+              fragmentShader:`uniform vec3 glowColor;
+      uniform float opacity;
+      varying float intensity;
+      void main(){
+      vec3 glow = glowColor * intensity;
+      gl_FragColor = vec4(glow, opacity);
+      }`,
+              side: THREE.FrontSide,  transparent: true,
+      })
+        const glowedSphere=new THREE.Mesh(
+          new THREE.IcosahedronGeometry(rad-.003,16),
+          shaderMaterial_GLOW
+        )
+        glowedSphere.rotateY(-2)
+        scene.add(glowedSphere)
+      }
+      // \ ADD GLOWED SPHERE
+
       const m = new THREE.MeshBasicMaterial({
         color: new THREE.Color(params.mapPoints.base),
         side: sideOfMap,
@@ -640,7 +681,7 @@ document.body.appendChild(stats.dom)
 // \ JFT
 renderer.setAnimationLoop( () => {
   TWEEN.update()
- // group.rotation.y += 0.001
+  group.rotation.y += 0.001
   renderer.render(scene, camera)
   // JFT
   stats.update()
