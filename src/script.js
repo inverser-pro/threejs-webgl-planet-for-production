@@ -89,8 +89,8 @@ const data=[
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#00aa00', // HEX Color | Default #ff00ff
-    textDistance: 1.3, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
+    textStickColor: '#ff0000', // HEX Color | Default #ff00ff
+    textDistance: 1.3, // Float | Default 1.1 | min ≈1.1, max ≈2 | Distance from the surface of the planet to the text
     to:{lat:-26.164493,lon:134.742407},//TO   1 Australia
   },
   
@@ -114,7 +114,7 @@ const data=[
     textColor: '#00cc99', // HEX Color | Default #ffffff
     textSize: .3, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
-    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
+    textStickColor: '#ff0000', // HEX Color | Default #ffffff
     to:{lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
   },
 
@@ -139,7 +139,7 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff00aa', // HEX Color | Default #ffffff
     textSize: .07, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
-    textStickColor: '#ff00ff', // HEX Color | Default #ffffff
+    textStickColor: '#ff0000', // HEX Color | Default #ffffff
     to:{lat:76.910298, lon:-40.348415},//TO 3 // Greenland
   },
 
@@ -163,8 +163,8 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#f9f9f9', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#ffffff', // HEX Color | Default #ff00ff
-    textDistance: 1.1, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
+    textStickColor: '#ff0000', // HEX Color | Default #ff00ff
+    textDistance: 1.05, // Float | Default 1.1 | min ≈1, max ≈2 | Distance from the surface of the planet to the text
     to:{lat:38.870829359139556, lon: -77.05594503672475},//TO 4 // Washington
     //to:{lat:7.952571, lon:-73.546554},//TO 4 // Washington
   },
@@ -173,7 +173,7 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
 const maxImpactAmount = data.length; // Constant for determining the number "boom"
 function isFloat(n){return Number(n) === n && n % 1 !== 0;} // Flote of numbers
 
-// TRY FONT
+// CREATE TEXT AND POINTER
 function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,multiplyScalar=1,color=0xffffff,bgPlane,textStickColor){
   // bgPlane — If this parameter is present, then we add a plan from behind
   const text_=new String(text);
@@ -217,59 +217,19 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     plane.translateZ(-.001)
     text.add(plane)
     if(textStickColor){
-      /* const points=[]
-      points.push(new THREE.Vector3(pos[0],pos[1],pos[2]))
-      points.push(new THREE.Vector3(text.position.x,text.position.y,text.position.z))
-      // LINE OBJ
-      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({transparent:true, color:textStickColor || 0x0086ff}))
-      group.add(line) */
-      //anime({targets:line.material,opacity:[0,1],duration:4000,easing})
-
-      // PLANE OBJ
-      /* const height_=new THREE.Vector3(pos[0],pos[1],pos[2]).distanceTo(new THREE.Vector3(text.position.x,text.position.y,text.position.z));
-      const plane_=new THREE.Mesh(
-        new THREE.PlaneGeometry(height_,height_),
-        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
-      )
-      plane_.position.set(text.position.x,text.position.y,text.position.z).multiplyScalar(multiplyScalar/1.15)
-      plane_.lookAt(new THREE.Vector3)
-      plane_.rotateX(Math.PI/2)
-      group.add(plane_) */
-//      const shape = new THREE.Shape()
-//
-//      const x = 0
-//      const y = 0
-//
-//      shape.moveTo(x - .5, y - .5)
-//      shape.lineTo(x + .5, y - 1)
-//      shape.lineTo(x, y)
-//
-//      const TriangleGeometry = new THREE.ShapeGeometry(shape)
-//      const Triangle=new THREE.Mesh(
-//        TriangleGeometry,
-//        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
-//      )
-//      Triangle.position.set(text.position.x,text.position.y,text.position.z)//.multiplyScalar(multiplyScalar/1.15)
-//      Triangle.lookAt(new THREE.Vector3)
-//      group.add(Triangle)
-      // point for line
+      // point for line (necessary temporarily)
       const point = new THREE.Mesh(
-        new THREE.CircleGeometry(size/15,12),
+        new THREE.CircleGeometry(0,3),
         new THREE.MeshBasicMaterial()
       )
       point.position.set(text.position.x,text.position.y,text.position.z)
-      point.rotation.set(text.rotation.x,text.rotation.y,text.rotation.z)
-      //point.lookAt(new THREE.Vector3)
       point.translateY(.1)
       point.translateZ(-.01)
-      // POINT OBJ
       group.add(point)
 
-      // JFT
+      // POINTER OBJ
       const geom = new THREE.BufferGeometry();
       const two=new THREE.Vector3(point.position.x,point.position.y,point.position.z)
-/* console.log(plane.geometry.attributes.position.array[0],plane.geometry.attributes.position.array[1],plane.geometry.attributes.position.array[2],
-  ); */
       geom.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( [
           text.position.x,text.position.y,text.position.z,
           two.x,two.y,two.z,
@@ -280,9 +240,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
         geom,  new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
       );
       group.add(pointer);
-      point.remove()
-
-      // \ JFT
+      // point.remove()
     }
   }
   group.add(text);
@@ -298,7 +256,7 @@ ttfLoader.load(
       font=fnt
     }
 )
-// \ TRY FONT
+// \ CREATE TEXT AND POINTER
 
 
 const impacts = []; // Array for "boom"
@@ -403,7 +361,7 @@ for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the 
   //t.chain(w)
   t.start().repeat(data[i].lineRepeats || Infinity)
 
-// TRY ADD FONT AND MORE...
+// ADD FONT AND MORE...
   const forText=Object.create({
     text:data[i].text,
     textColor:data[i].textColor || '#ffffff',
@@ -413,7 +371,6 @@ for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the 
     textDistance:data[i].textDistance || 1.1,
     textStickColor:data[i].textStickColor || '#0086ff',
   })
-  //console.log(d,data[tmp1].text);
   // We are waiting for the font to download over the network
   if(!font){ // Wait
     let sti=setInterval(() => {
@@ -424,19 +381,8 @@ for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the 
       }
     }, 100);
   }
-  // TRY IT
-    else{ // Font is loaded
-      console.log('font loaed');
-    }
+// \ ADD FONT AND MORE...
 
-// \ TRY ADD FONT AND MORE...
-
-
-  /* if(tmp===1){
-    tmp1+=2;  tmp=0
-  }else{
-    tmp++;  (tmp1===0)?tmp1=2:tmp1++
-  } */
 }
 const uniforms = { // For Shader with "boom"
   impacts: {value: impacts},
