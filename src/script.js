@@ -53,8 +53,8 @@ const params = {
     opacityOfOceanPoints:0.1,// !FLOAT ONLY! | ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY | ex. 1000 - 40000 | The more — the more points on the planet, but the more difficult the calculations
     showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background | IMPORTANT!  if(showGlowedSphere===true)showBackMap=false
-    showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
-    hiddenShpereColor:'#0000ff',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
+    showSphereToHideBackSide:true, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
+    hiddenShpereColor:'#04051e',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
     hiddenSphereOpacity:1,
     showGlowedSphere:true,
     showGlowedSphereColor:0x005caf,
