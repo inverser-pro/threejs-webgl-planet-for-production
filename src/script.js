@@ -223,6 +223,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
         new THREE.MeshBasicMaterial()
       )
       point.position.set(text.position.x,text.position.y,text.position.z)
+      point.rotation.set(text.rotation.x,text.rotation.y,text.rotation.z)
       point.translateY(.1)
       point.translateZ(-.01)
       group.add(point)
@@ -237,10 +238,11 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
         ])
         , 3 ) )
       const pointer = new THREE.Mesh(
-        geom,  new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+        geom,  new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide, transparent:true})
       );
       group.add(pointer);
-      // point.remove()
+      point.remove()
+      anime({targets:pointer.material,opacity:[0,1],duration:4000,easing})
     }
   }
   group.add(text);
