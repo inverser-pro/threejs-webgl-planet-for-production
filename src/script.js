@@ -191,37 +191,6 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   const bbox = new THREE.Box3().setFromObject(text);
   const widthZ=bbox.max.z-bbox.min.z
   if(bgPlane){
-    /* const plane=new THREE.Mesh(
-      new THREE.PlaneGeometry(widthZ*2/1.4,size*2),
-      new THREE.ShaderMaterial({side:THREE.DoubleSide,transparent:true,
-        uniforms: {
-          color: {value: new THREE.Color(bgPlane || 0xffffff)},
-        },
-        vertexShader:`varying vec3 vPosition;
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          vPosition = position.xyz;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
-        }`,
-        fragmentShader:`varying vec3 vPosition;
-        uniform vec3 color;
-        varying vec2 vUv;
-        void main(){
-          vec2 center = vec2(vUv.x,vUv.y-.5);
-          float dist = length(center);
-          float aplha = step(dist,.25);
-          gl_FragColor = vec4(color, aplha);//dist > .25 ? .0 : 1.
-        }`,
-      })
-    );
-    //plane.position.set(pos[0],pos[1],pos[2])//.multiplyScalar(multiplyScalar*.9999)
-    //plane.lookAt(new THREE.Vector3)
-    plane.translateY(size/2)
-    plane.translateX(widthZ/1.5)
-    //plane.rotateY(rotY)
-    text.add(plane) */
     let factor=2
     const len = (text_.match(/\n/g)||[]).length
     if(len){
@@ -246,15 +215,14 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     //plane.lookAt(new THREE.Vector3)
     plane.translateY(-height/3.5*factor/2.5)
     plane.translateX(-.05)
-    plane.translateZ(-.01)
+    plane.translateZ(-.001)
     text.add(plane)
     if(textStickColor){
-      const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-      const points = [];
-      points.push( new THREE.Vector3( pos[0],pos[1],pos[2] ) );
-      points.push( new THREE.Vector3(text.position.x,text.position.y,text.position.z) );
-      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints( points ), new THREE.LineBasicMaterial( { color: textStickColor || 0x0086ff } ) );
-      group.add( line );
+      const points = []
+      points.push( new THREE.Vector3( pos[0],pos[1],pos[2] ) )
+      points.push( new THREE.Vector3(text.position.x,text.position.y,text.position.z) )
+      const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints( points ), new THREE.LineBasicMaterial( { color: textStickColor || 0x0086ff } ) )
+      group.add( line )
 
       // point for line
       const point = new THREE.Mesh(
@@ -263,7 +231,8 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
       )
       point.position.set(text.position.x,text.position.y,text.position.z)
       point.lookAt(new THREE.Vector3)
-      point.translateZ(-.01)
+      point.translateZ(-.001)
+      point.translateX(.04)
       group.add(point)
     }
   }
