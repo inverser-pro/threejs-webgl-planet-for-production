@@ -27,7 +27,7 @@ let o;
 const scene = new THREE.Scene();
 //scene.background = new THREE.Color('blue');
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.01, 50);
-camera.position.set(0, 10, 10);
+camera.position.set(0, 10, 5);
 const renderer = new THREE.WebGLRenderer({canvas:cns,antialias: true,alpha: true});
 renderer.setSize(sizes.width , sizes.height);
 
@@ -89,7 +89,7 @@ const data=[
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#000000', // HEX Color | Default #ff00ff
+    textStickColor: '#00aa00', // HEX Color | Default #ff00ff
     textDistance: 1.3, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
     to:{lat:-26.164493,lon:134.742407},//TO   1 Australia
   },
@@ -163,7 +163,7 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#f9f9f9', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#000000', // HEX Color | Default #ff00ff
+    textStickColor: '#ffffff', // HEX Color | Default #ff00ff
     textDistance: 1.1, // Float | Default 0.1 | min ≈.01, max ≈2 | Distance from the surface of the planet to the text
     to:{lat:38.870829359139556, lon: -77.05594503672475},//TO 4 // Washington
     //to:{lat:7.952571, lon:-73.546554},//TO 4 // Washington
@@ -199,7 +199,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     const x = 0;  const y = 0
     const width = widthZ*2/1.4
     const height = size*factor
-    const radius = size*.9
+    const radius = size*.8
     const shape = new THREE.Shape();// https://stackoverflow.com/questions/65567873/create-a-plane-with-curved-edges-using-planegeometry-three-js
     shape.moveTo( x, y + radius );
     shape.lineTo( x, y + height - radius );
@@ -217,25 +217,72 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     plane.translateZ(-.001)
     text.add(plane)
     if(textStickColor){
-      const points=[]
+      /* const points=[]
       points.push(new THREE.Vector3(pos[0],pos[1],pos[2]))
       points.push(new THREE.Vector3(text.position.x,text.position.y,text.position.z))
       // LINE OBJ
       const line = new THREE.Line( new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({transparent:true, color:textStickColor || 0x0086ff}))
-      group.add(line)
-      anime({targets:line.material,opacity:[0,1],duration:4000,easing})
+      group.add(line) */
+      //anime({targets:line.material,opacity:[0,1],duration:4000,easing})
+
+      // PLANE OBJ
+      /* const height_=new THREE.Vector3(pos[0],pos[1],pos[2]).distanceTo(new THREE.Vector3(text.position.x,text.position.y,text.position.z));
+      const plane_=new THREE.Mesh(
+        new THREE.PlaneGeometry(height_,height_),
+        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+      )
+      plane_.position.set(text.position.x,text.position.y,text.position.z).multiplyScalar(multiplyScalar/1.15)
+      plane_.lookAt(new THREE.Vector3)
+      plane_.rotateX(Math.PI/2)
+      group.add(plane_) */
+//      const shape = new THREE.Shape()
+//
+//      const x = 0
+//      const y = 0
+//
+//      shape.moveTo(x - .5, y - .5)
+//      shape.lineTo(x + .5, y - 1)
+//      shape.lineTo(x, y)
+//
+//      const TriangleGeometry = new THREE.ShapeGeometry(shape)
+//      const Triangle=new THREE.Mesh(
+//        TriangleGeometry,
+//        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+//      )
+//      Triangle.position.set(text.position.x,text.position.y,text.position.z)//.multiplyScalar(multiplyScalar/1.15)
+//      Triangle.lookAt(new THREE.Vector3)
+//      group.add(Triangle)
       // point for line
       const point = new THREE.Mesh(
         new THREE.CircleGeometry(size/15,12),
-        new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+        new THREE.MeshBasicMaterial()
       )
       point.position.set(text.position.x,text.position.y,text.position.z)
       point.rotation.set(text.rotation.x,text.rotation.y,text.rotation.z)
       //point.lookAt(new THREE.Vector3)
-      point.translateZ(.001)
-      //point.translateX(.04)
+      point.translateY(.1)
+      point.translateZ(-.01)
       // POINT OBJ
       group.add(point)
+
+      // JFT
+      const geom = new THREE.BufferGeometry();
+      const two=new THREE.Vector3(point.position.x,point.position.y,point.position.z)
+/* console.log(plane.geometry.attributes.position.array[0],plane.geometry.attributes.position.array[1],plane.geometry.attributes.position.array[2],
+  ); */
+      geom.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( [
+          text.position.x,text.position.y,text.position.z,
+          two.x,two.y,two.z,
+          pos[0],pos[1],pos[2],
+        ])
+        , 3 ) )
+      const pointer = new THREE.Mesh(
+        geom,  new THREE.MeshBasicMaterial({color:textStickColor || 0x0086ff,side:THREE.DoubleSide})
+      );
+      group.add(pointer);
+      point.remove()
+
+      // \ JFT
     }
   }
   group.add(text);
@@ -645,7 +692,7 @@ document.body.appendChild(stats.dom)
 // \ JFT
 renderer.setAnimationLoop( () => {
   TWEEN.update()
-  group.rotation.y += 0.001
+ // group.rotation.y += 0.001
   renderer.render(scene, camera)
   // JFT
   stats.update()
