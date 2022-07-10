@@ -11,7 +11,6 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader'
 import { TextGeometry } from 'three/src/geometries/TextGeometry'
 import { FontLoader } from 'three/src/loaders/FontLoader'
-//import { FontLoader } from '../src/FontLoader';
 
 import anime from 'animejs/lib/anime'
 //import * as dat from 'dat.gui'
@@ -53,8 +52,8 @@ const params = {
     opacityOfOceanPoints:0.1,// !FLOAT ONLY! | ex. 0.1 | MIN: 0.1 - black, MAX: 0.9
     countOfPoints:25000,// INT ONLY | ex. 1000 - 40000 | The more — the more points on the planet, but the more difficult the calculations
     showBackMap:true, // BOOLEAN | Removes the view from the planet map that is in the background | IMPORTANT!  if(showGlowedSphere===true)showBackMap=false
-    showSphereToHideBackSide:true, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
-    hiddenShpereColor:'#04051e',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
+    showSphereToHideBackSide:false, // BOOLEAN | IF TRUE, showBackMap = false || Shows an additional sphere, as if under the map of the planet. This sphere hides the background of the map.
+    hiddenShpereColor:'#000000',// HEX Color | If you want to disable showing the background of the planet map, then an additional object is created in the form of a sphere, which also hides some elements on the back of the planet, which is, as it were, in the background from you
     hiddenSphereOpacity:1,
     showGlowedSphere:true,
     showGlowedSphereColor:0x005caf,
@@ -86,14 +85,14 @@ const data=[
     stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     // NEW
-    text:`China, Pekin | Běijīng | 北京
+    text:`ясч China, Pekin | Běijīng | 北京
 132`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#0086ff', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#ff0000', // HEX Color | Default #ff00ff
+    textStickColor: '#ffffff', // HEX Color | Default #ff00ff
     textDistance: 1.3, // Float | Default 1.1 | min ≈1.1, max ≈2 | Distance from the surface of the planet to the text
-    to:{lat:-26.164493,lon:134.742407},//TO   1 Australia
+    to:{lat:-26.164493,lon:134.742407},// REQUIRED | TO   1 Australia
   },
   
   // \\ This forms three objects: a line, a "boom", a stick
@@ -116,7 +115,7 @@ const data=[
     textColor: '#00cc99', // HEX Color | Default #ffffff
     textSize: .3, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
-    textStickColor: '#ff0000', // HEX Color | Default #ffffff
+    textStickColor: '#ffffff', // HEX Color | Default #ffffff
     to:{lat:-15.860255, lon:-58.059177},//TO 2 // Central South America
   },
 
@@ -141,10 +140,9 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff00aa', // HEX Color | Default #ffffff
     textSize: .07, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
-    textStickColor: '#ff0000', // HEX Color | Default #ffffff
+    textStickColor: '#ffffff', // HEX Color | Default #ffffff
     to:{lat:76.910298, lon:-40.348415},//TO 3 // Greenland
   },
-
   {
     lat:65.242150, lon:149.801448, // FROM 4 East RU
     lineSpeed:2, // Integer | Default 2 | min ≈1, max ≈20 | It's speed - how fast does the animation of the line go from point A to point B
@@ -165,7 +163,7 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#f9f9f9', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
-    textStickColor: '#ff0000', // HEX Color | Default #ff00ff
+    textStickColor: '#f9f9f9', // HEX Color | Default #ff00ff
     textDistance: 1.05, // Float | Default 1.1 | min ≈1, max ≈2 | Distance from the surface of the planet to the text
     to:{lat:38.870829359139556, lon: -77.05594503672475},//TO 4 // Washington
     //to:{lat:7.952571, lon:-73.546554},//TO 4 // Washington
@@ -180,7 +178,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   // bgPlane — If this parameter is present, then we add a plan from behind
   const text_=new String(text);
   const textGeo = new TextGeometry(text_,{
-    font,  size,  height: .004,  curveSegments:1
+    font,  size,  height: 0,  curveSegments:1
   } );
   const textMaterial=new THREE.MeshBasicMaterial({color,side:THREE.BackSide});
   // TEXT OBJ
@@ -196,7 +194,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
   anime({targets:text.scale,x:[0,1],y:[0,1],z:[0,1],duration:4000,easing})
   if(bgPlane){
     let factor=2
-    const len = (text_.match(/\n/g)||[]).length
+    const len = (text_.match(/\n/g)||[]).length// 3
     if(len)factor*=len+1
     const x = 0;  const y = 0
     const width = widthZ*2/1.4
@@ -213,7 +211,7 @@ function createText(text='Default text',pos=[0,0,0],rotY=Math.PI,size=.1,font,mu
     shape.lineTo( x + radius, y );
     shape.quadraticCurveTo( x, y, x, y + radius )
     // PLANE OBJ
-    const plane = new THREE.Mesh( new THREE.ShapeBufferGeometry( shape ),  new THREE.MeshBasicMaterial({color:bgPlane || 0x0086ff,side:THREE.DoubleSide}))
+    const plane = new THREE.Mesh( new THREE.ShapeGeometry( shape ),  new THREE.MeshBasicMaterial({color:bgPlane || 0x0086ff,side:THREE.DoubleSide}))
     plane.translateY(-height/3.5*factor/2.5)
     plane.translateX(-.05)
     plane.translateZ(-.001)
@@ -265,10 +263,7 @@ ttfLoader.load(
 
 const impacts = []; // Array for "boom"
 const trails = []; // Array for animated lines
-let tmp=0, // For the cycle that sorting out the values of the object with the data
-  tmp1=0, // ~^~
-  isMapLoaded=false // Determines when the planet card is formed
-const tweenGroup = new TWEEN.Group()
+let isMapLoaded=false // Determines when the planet card is formed
 const easing='easeInOutSine'// https://codepen.io/kcjpop/pen/GvdQdX
 
 for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the object with the data
@@ -376,7 +371,7 @@ for(let i=0;i<data.length;i++){ // The cycle that sorting out the values of the 
     textStickColor:data[i].textStickColor || '#0086ff',
   })
   // We are waiting for the font to download over the network
-  if(!font){ // Wait
+  if(!font&&forText.text){ // Wait TEST IT
     let sti=setInterval(() => {
       if(font){
         clearInterval(sti)
@@ -466,9 +461,9 @@ const uniforms = { // For Shader with "boom"
           uniforms:{
                   "c":{type: "f", value:.5},// intencity
                   "p":{type: "f", value:3.},// density
-                  "opacity":{type: "f", value:.7},// density
+                  "opacity":{type: "f", value:.7},// opacity
                   glowColor: { type: "c", value: new THREE.Color(params.mapPoints.showGlowedSphereColor || 0x0086ff) },//0x00aaff
-                  viewVector: { type: "v3", value: new THREE.Vector3(0,0,2) }// glow rotation
+                  viewVector: { type: "v3", value: new THREE.Vector3(0,0,1) }// glow rotation
               },
               vertexShader:`uniform vec3 viewVector;
       uniform float c;
@@ -487,13 +482,13 @@ const uniforms = { // For Shader with "boom"
       vec3 glow = glowColor * intensity;
       gl_FragColor = vec4(glow, opacity);
       }`,
-              side: THREE.FrontSide,  transparent: true,
+              /* side: THREE.FrontSide,*/  transparent: true,
       })
         const glowedSphere=new THREE.Mesh(
           new THREE.IcosahedronGeometry(rad-.003,16),
           shaderMaterial_GLOW
         )
-        glowedSphere.rotateY(-2)
+        glowedSphere.rotateY(1)
         scene.add(glowedSphere)
       }
       // \ ADD GLOWED SPHERE
