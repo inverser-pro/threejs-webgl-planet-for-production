@@ -85,7 +85,7 @@ const data=[
     stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     // NEW
-    text:`ясч China, Pekin | Běijīng | 北京
+    text:`Australia
 132`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
@@ -111,7 +111,7 @@ const data=[
     stickHeight:1.5,
     stickWidth:.05,
     // NEW
-    text:'Central Africa', // String | Max: 50 symbol | ex. 'This is Pekin'
+    text:'South America', // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#00cc99', // HEX Color | Default #ffffff
     textSize: .3, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
@@ -134,9 +134,9 @@ const data=[
     stickHeight:1,
     stickWidth:.1,
     // NEW
-    text:`South Amer
-Souls: 0;
-Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
+    text:`Greenland
+Text1: 0;
+Text2 Hello: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff00aa', // HEX Color | Default #ffffff
     textSize: .07, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#ffffff', // HEX Color | Default #0086ff
@@ -159,7 +159,7 @@ Mines: 1e5`, // String | Max: 50 symbol | ex. 'This is Pekin'
     stickHeight:2, // Integer or Float | Default 1.1 | min ≈1, max ≈5 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     stickWidth:.02, // Float | Default 0.1 | min ≈.01, max ≈.2 | ex. for randomization it: THREE.Math.randFloat(.5, 2).toFixed(2) | Arrives line height
     // NEW
-    text:`I Love USA`, // String | Max: 50 symbol | ex. 'This is Pekin'
+    text:`I Love USA | Washington`, // String | Max: 50 symbol | ex. 'This is Pekin'
     textColor: '#ff0000', // HEX Color | Default #ffffff
     textSize: .1, // Float | Default: .1 | Depending on the size of the text, an underlay is formed on the background of the text
     textBgColor: '#f9f9f9', // HEX Color | Default #0086ff | If this parameter is present, then we add a plan from behind
