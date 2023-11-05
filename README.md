@@ -1,6 +1,6 @@
 # ThreeJS WEBGL 3D planet for production
 
-![Watch on Youtube](https://www.youtube.com/watch?v=UNvoDucprRE&list=PL0XYm8bdyeFDGJmFeHDiEXsmLfq3vWBaj)
+[Watch on Youtube](https://www.youtube.com/watch?v=UNvoDucprRE&list=PL0XYm8bdyeFDGJmFeHDiEXsmLfq3vWBaj)
 
 ![](https://github.com/inverser-pro/threejs-webgl-planet-for-production/blob/main/static/Planet_screenshot.jpg?raw=true)
 
